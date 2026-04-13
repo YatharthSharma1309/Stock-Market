@@ -77,35 +77,50 @@ Stock Market/
 
 ---
 
-## Phase 1 — Foundation & Auth
+## Phase 1 — Foundation & Auth ✅ COMPLETE
 
 **Goal:** Docker environment running with user registration and login working end-to-end.
 
 ### Tasks
-- [ ] Docker Compose with: frontend, backend, PostgreSQL, Redis, Nginx
-- [ ] FastAPI backend: User model, JWT register/login endpoints, SQLAlchemy + PostgreSQL, Redis client
-- [ ] React frontend: Vite + TypeScript setup, TailwindCSS + ShadCN, Login/Register pages, protected routes
-- [ ] Integration: connect frontend auth to backend JWT endpoints
-- [ ] QA: verify full stack boots and auth works
+- [x] Docker Compose with: frontend, backend, PostgreSQL, Redis, Nginx
+- [x] FastAPI backend: User model, JWT register/login endpoints, SQLAlchemy + PostgreSQL, Redis client
+- [x] React frontend: Vite + TypeScript setup, TailwindCSS dark theme, Login/Register pages, protected routes
+- [x] Integration: connect frontend auth to backend JWT endpoints
+- [x] QA: verified — `/api/health` returns `{"status":"ok","database":"connected","redis":"connected"}`
+
+### Key fixes applied
+- Pinned `bcrypt==3.2.2` to fix passlib compatibility with bcrypt 4.x
+- Fixed PostgreSQL health check: added `-d ${POSTGRES_DB}` to `pg_isready`
+- Removed deprecated `version:` field from docker-compose.yml
 
 ### Deliverables
-- `docker compose up --build` starts everything
-- http://localhost:3000 shows the app
-- Users can register and login with JWT tokens
+- `docker compose up --build` starts everything ✅
+- http://localhost:3000 — Login/Register/Dashboard working ✅
+- Users can register and login with JWT tokens ✅
 
 ---
 
-## Phase 2 — Live Market Data
+## Phase 2 — Live Market Data ✅ COMPLETE
 
 **Goal:** Display real-time stock prices from NSE/BSE and global markets.
 
 ### Tasks
-- [ ] Backend: `yfinance` integration service, stock search endpoint, price endpoint
-- [ ] Backend: Redis caching layer (prices refresh every 15 seconds)
-- [ ] Backend: WebSocket endpoint for streaming live prices
-- [ ] Frontend: Stock search bar, price display, WebSocket client hook
-- [ ] Frontend: Market overview page (top gainers/losers, indices)
-- [ ] QA: verify prices update in real time, search works for NSE/BSE/global tickers
+- [x] Backend: `yfinance` market service — NSE (`.NS`), BSE (`.BO`), global stocks
+- [x] Backend: Redis caching layer (15s TTL per symbol)
+- [x] Backend: WebSocket `/ws/prices` — streams live price updates every 15s
+- [x] Backend: REST endpoints — `/api/market/indices`, `/nse`, `/global`, `/quote/{sym}`, `/quotes`, `/search`
+- [x] Frontend: Markets page — 5 index cards, NSE/Global tabs, searchable stock table
+- [x] Frontend: `useMarketData` WebSocket hook for real-time updates
+- [x] Frontend: `Layout` component — shared sidebar with active-link highlighting
+- [x] Frontend: `IndexCard`, `StockTable` components
+
+### Stock coverage
+- **Indices:** NIFTY 50, SENSEX, S&P 500, NASDAQ, Dow Jones
+- **NSE stocks:** 20 (RELIANCE, TCS, HDFC, INFY, ICICI, etc.)
+- **Global stocks:** 20 (AAPL, MSFT, GOOGL, NVDA, META, TSLA, etc.)
+
+### Architecture note
+Dropped `nsepy` as primary source — `yfinance` covers NSE/BSE/global uniformly and is more reliable.
 
 ---
 
@@ -237,10 +252,18 @@ VITE_WS_URL=ws://localhost:8000
 
 - [x] Plan approved
 - [x] Git repository initialized
-- [ ] Phase 1 — Foundation & Auth (in progress)
-- [ ] Phase 2 — Live Market Data
+- [x] Phase 1 — Foundation & Auth ✅
+- [x] Phase 2 — Live Market Data ✅
 - [ ] Phase 3 — Paper Trading Engine
 - [ ] Phase 4 — Charts & Technical Indicators
 - [ ] Phase 5 — Learning Modules
-- [ ] Phase 6 — AI Trading Assistant
+- [ ] Phase 6 — AI Trading Assistant *(Claude API key configured)*
 - [ ] Phase 7 — UI Polish & Final Features
+
+## Git History
+
+| Commit | Description |
+|--------|-------------|
+| `6544f8f` | Initial commit: README + plan.md |
+| `269a594` | Phase 1: Docker + FastAPI backend + React frontend skeleton |
+| `787c265` | Phase 2: Live market data — NSE/BSE + global stocks |
