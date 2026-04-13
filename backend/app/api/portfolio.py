@@ -28,11 +28,11 @@ def buy_stock(
     try:
         quote = get_quote(symbol)
     except Exception as e:
-        raise HTTPException(status_code=502, detail=f"Could not fetch price: {e}")
+        raise HTTPException(status_code=503, detail=f"Could not fetch price: {e}")
 
     price = quote.get("price")
     if not price:
-        raise HTTPException(status_code=502, detail="Price unavailable for this symbol")
+        raise HTTPException(status_code=503, detail="Price unavailable for this symbol")
 
     total_cost = Decimal(str(price)) * Decimal(str(req.quantity))
 
@@ -106,11 +106,11 @@ def sell_stock(
     try:
         quote = get_quote(symbol)
     except Exception as e:
-        raise HTTPException(status_code=502, detail=f"Could not fetch price: {e}")
+        raise HTTPException(status_code=503, detail=f"Could not fetch price: {e}")
 
     price = quote.get("price")
     if not price:
-        raise HTTPException(status_code=502, detail="Price unavailable for this symbol")
+        raise HTTPException(status_code=503, detail="Price unavailable for this symbol")
 
     proceeds = Decimal(str(price)) * Decimal(str(req.quantity))
     current_user.virtual_balance += proceeds

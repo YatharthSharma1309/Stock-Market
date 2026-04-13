@@ -1,9 +1,11 @@
 import asyncio
 import json
+import logging
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from app.services.market import get_quotes_batch
 
 router = APIRouter(tags=["websocket"])
+logger = logging.getLogger(__name__)
 
 
 @router.websocket("/ws/prices")
@@ -26,5 +28,5 @@ async def websocket_prices(websocket: WebSocket):
         pass
     except asyncio.TimeoutError:
         await websocket.close()
-    except Exception:
-        pass
+    except Exception as e:
+        logger.error(f"WebSocket error for symbols {symbols}: {e}")

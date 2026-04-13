@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     CLAUDE_API_KEY: str = ""
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     ALGORITHM: str = "HS256"
+    FRONTEND_URL: str = "http://localhost:3000"
 
     class Config:
         env_file = ".env"

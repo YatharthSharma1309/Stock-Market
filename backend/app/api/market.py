@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from app.services.market import (
-    get_quote, get_quotes_batch, get_indices, search_stocks,
+    get_quote, get_quotes_batch, get_indices, search_stocks, get_history,
     NSE_STOCKS, GLOBAL_STOCKS,
 )
 
@@ -17,7 +17,7 @@ def quote(symbol: str):
     try:
         return get_quote(symbol.upper())
     except Exception as e:
-        raise HTTPException(status_code=502, detail=f"Failed to fetch quote: {str(e)}")
+        raise HTTPException(status_code=503, detail=f"Failed to fetch quote: {str(e)}")
 
 
 @router.get("/quotes")
@@ -33,6 +33,19 @@ def search(q: str):
     if len(q) < 1:
         raise HTTPException(status_code=400, detail="Query too short")
     return search_stocks(q)
+
+
+@router.get("/history/{symbol}")
+def history(symbol: str, period: str = "1M"):
+    try:
+        data = get_history(symbol.upper(), period)
+        if not data:
+            raise HTTPException(status_code=404, detail="No historical data available")
+        return data
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=f"Failed to fetch history: {e}")
 
 
 @router.get("/nse")

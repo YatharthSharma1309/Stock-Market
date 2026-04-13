@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { X, TrendingUp, TrendingDown } from 'lucide-react'
+import axios from 'axios'
 import api from '@/services/api'
 import type { Quote } from '@/hooks/useMarketData'
 
@@ -28,8 +29,12 @@ export default function TradeModal({ quote, onClose, onSuccess }: Props) {
       await api.post(`/api/portfolio/${tab}`, { symbol: quote.symbol, quantity: qty })
       onSuccess()
       onClose()
-    } catch (e: any) {
-      setError(e.response?.data?.detail || 'Trade failed. Please try again.')
+    } catch (e) {
+      if (axios.isAxiosError(e)) {
+        setError(e.response?.data?.detail || 'Trade failed. Please try again.')
+      } else {
+        setError('Trade failed. Please try again.')
+      }
     } finally {
       setLoading(false)
     }

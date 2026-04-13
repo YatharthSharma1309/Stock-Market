@@ -52,8 +52,8 @@ export default function DashboardPage() {
     },
     {
       label: 'Learning Progress',
-      value: '0%',
-      change: '0 / 5 modules',
+      value: 'Coming Soon',
+      change: 'Phase 5 feature',
       positive: true,
     },
   ]

@@ -38,6 +38,10 @@ export function useMarketData(symbols: string[]) {
       }
     }
 
+    ws.onerror = () => {
+      console.warn('Market data WebSocket error — live prices unavailable')
+    }
+
     return () => ws.close()
   }, [key])
 

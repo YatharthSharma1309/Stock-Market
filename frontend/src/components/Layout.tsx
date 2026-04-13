@@ -1,13 +1,12 @@
 import { Outlet, Link, useLocation } from 'react-router-dom'
-import { TrendingUp, LayoutDashboard, BarChart2, Briefcase, BookOpen, Bot, LogOut } from 'lucide-react'
+import { TrendingUp, LayoutDashboard, BarChart2, Briefcase, History, LogOut } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 
 const navLinks = [
   { icon: LayoutDashboard, label: 'Dashboard', to: '/dashboard' },
   { icon: BarChart2, label: 'Markets', to: '/markets' },
   { icon: Briefcase, label: 'Portfolio', to: '/portfolio' },
-  { icon: BookOpen, label: 'Learn', to: '/learn' },
-  { icon: Bot, label: 'AI Assistant', to: '/ai' },
+  { icon: History, label: 'Trade History', to: '/trades' },
 ]
 
 export default function Layout() {

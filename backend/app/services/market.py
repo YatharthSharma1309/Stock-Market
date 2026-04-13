@@ -1,6 +1,7 @@
 import json
 import math
 import logging
+from datetime import timezone as _tz
 import yfinance as yf
 from app.core.redis_client import redis_client
 
@@ -146,6 +147,60 @@ def get_indices() -> list[dict]:
             entry["index_name"] = name
             out.append(entry)
     return out
+
+
+HISTORY_CACHE_TTL = {"1D": 60, "1W": 300, "1M": 600, "3M": 1800, "1Y": 3600}
+HISTORY_RANGE_MAP = {
+    "1D": ("1d", "5m"),
+    "1W": ("5d", "30m"),
+    "1M": ("1mo", "1d"),
+    "3M": ("3mo", "1d"),
+    "1Y": ("1y", "1wk"),
+}
+
+
+def get_history(symbol: str, range_key: str = "1M") -> list[dict]:
+    range_key = range_key.upper()
+    cache_key = f"history:{symbol}:{range_key}"
+    cached = redis_client.get(cache_key)
+    if cached:
+        return json.loads(cached)
+
+    period, interval = HISTORY_RANGE_MAP.get(range_key, ("1mo", "1d"))
+    ticker = yf.Ticker(symbol)
+    df = ticker.history(period=period, interval=interval)
+
+    if df.empty:
+        return []
+
+    result = []
+    for t, row in df.iterrows():
+        try:
+            if hasattr(t, "tzinfo") and t.tzinfo is not None:
+                unix_time = int(t.timestamp())
+            else:
+                unix_time = int(t.replace(tzinfo=_tz.utc).timestamp())
+        except Exception as e:
+            logger.warning(f"Skipping candle for {symbol} at {t}: {e}")
+            continue
+
+        o, h, l, c = float(row["Open"]), float(row["High"]), float(row["Low"]), float(row["Close"])
+        v = float(row["Volume"])
+        if any(math.isnan(x) for x in (o, h, l, c)):
+            continue
+
+        result.append({
+            "time": unix_time,
+            "open": round(o, 4),
+            "high": round(h, 4),
+            "low": round(l, 4),
+            "close": round(c, 4),
+            "volume": int(v) if not math.isnan(v) else 0,
+        })
+
+    ttl = HISTORY_CACHE_TTL.get(range_key, 3600)
+    redis_client.setex(cache_key, ttl, json.dumps(result))
+    return result
 
 
 def search_stocks(query: str) -> list[dict]:
