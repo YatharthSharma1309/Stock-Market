@@ -1,6 +1,10 @@
 import json
+import math
+import logging
 import yfinance as yf
 from app.core.redis_client import redis_client
+
+logger = logging.getLogger(__name__)
 
 CACHE_TTL = 15  # seconds
 
@@ -64,7 +68,7 @@ ALL_STOCKS = NSE_STOCKS + GLOBAL_STOCKS
 def _safe_float(val) -> float | None:
     try:
         v = float(val)
-        return None if v != v else v  # NaN check
+        return None if math.isnan(v) else v
     except Exception:
         return None
 
@@ -87,7 +91,7 @@ def _fetch_quote(symbol: str) -> dict:
         "high": _safe_float(getattr(fi, "day_high", None)),
         "low": _safe_float(getattr(fi, "day_low", None)),
         "prev_close": prev,
-        "volume": _safe_float(getattr(fi, "three_month_average_volume", None)),
+        "volume": _safe_float(getattr(fi, "regular_market_volume", None)),
         "market_cap": _safe_float(getattr(fi, "market_cap", None)),
         "currency": getattr(fi, "currency", None),
     }
@@ -121,8 +125,8 @@ def get_quotes_batch(symbols: list[str]) -> list[dict]:
             data = _fetch_quote(s)
             redis_client.setex(f"quote:{s}", CACHE_TTL, json.dumps(data))
             cache_map[s] = data
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning(f"Failed to fetch quote for {s}: {e}")
 
     for s in symbols:
         if s in cache_map:

@@ -3,6 +3,7 @@ import { Search, RefreshCw } from 'lucide-react'
 import api from '@/services/api'
 import IndexCard from '@/components/IndexCard'
 import StockTable from '@/components/StockTable'
+import TradeModal from '@/components/TradeModal'
 import { useMarketData, type Quote } from '@/hooks/useMarketData'
 
 const INDEX_SYMBOLS = ['^NSEI', '^BSESN', '^GSPC', '^IXIC', '^DJI']
@@ -26,6 +27,7 @@ export default function MarketsPage() {
   const [search, setSearch] = useState('')
   const [searchResults, setSearchResults] = useState<{ symbol: string; name: string }[]>([])
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
+  const [tradeTarget, setTradeTarget] = useState<Quote | null>(null)
 
   // live WebSocket updates for currently visible stocks
   const activeSymbols = tab === 'nse'
@@ -158,8 +160,20 @@ export default function MarketsPage() {
             </button>
           ))}
         </div>
-        <StockTable quotes={displayedQuotes} loading={loading} />
+        <StockTable
+          quotes={displayedQuotes}
+          loading={loading}
+          onTrade={q => setTradeTarget(q)}
+        />
       </div>
+
+      {tradeTarget && (
+        <TradeModal
+          quote={tradeTarget}
+          onClose={() => setTradeTarget(null)}
+          onSuccess={() => setTradeTarget(null)}
+        />
+      )}
     </div>
   )
 }

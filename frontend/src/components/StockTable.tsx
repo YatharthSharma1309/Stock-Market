@@ -4,6 +4,7 @@ import type { Quote } from '@/hooks/useMarketData'
 interface Props {
   quotes: Quote[]
   loading: boolean
+  onTrade?: (quote: Quote) => void
 }
 
 function fmt(n: number | null, decimals = 2) {
@@ -19,13 +20,21 @@ function fmtMCap(n: number | null) {
   return n.toFixed(0)
 }
 
-export default function StockTable({ quotes, loading }: Props) {
+export default function StockTable({ quotes, loading, onTrade }: Props) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
         <Loader2 className="h-6 w-6 animate-spin text-primary" />
         <span className="ml-2 text-muted-foreground text-sm">Fetching live prices…</span>
       </div>
+    )
+  }
+
+  if (quotes.length === 0) {
+    return (
+      <p className="text-center text-muted-foreground py-8 text-sm">
+        Market data temporarily unavailable. Please refresh.
+      </p>
     )
   }
 
@@ -42,6 +51,7 @@ export default function StockTable({ quotes, loading }: Props) {
             <th className="py-3 px-4 text-muted-foreground font-medium text-right">High</th>
             <th className="py-3 px-4 text-muted-foreground font-medium text-right">Low</th>
             <th className="py-3 px-4 text-muted-foreground font-medium text-right">Mkt Cap</th>
+            {onTrade && <th className="py-3 px-4 text-muted-foreground font-medium text-center">Action</th>}
           </tr>
         </thead>
         <tbody>
@@ -49,14 +59,16 @@ export default function StockTable({ quotes, loading }: Props) {
             const positive = (q.change_pct ?? 0) >= 0
             return (
               <tr key={q.symbol} className="border-b border-border/50 hover:bg-secondary/30 transition">
-                <td className="py-3 px-4 font-semibold text-primary">{q.symbol.replace('.NS', '').replace('.BO', '')}</td>
+                <td className="py-3 px-4 font-semibold text-primary">
+                  {q.symbol.replace('.NS', '').replace('.BO', '')}
+                </td>
                 <td className="py-3 px-4 text-foreground">{q.name}</td>
                 <td className="py-3 px-4 text-right font-medium text-foreground">{fmt(q.price)}</td>
                 <td className={`py-3 px-4 text-right font-medium ${positive ? 'text-primary' : 'text-red-400'}`}>
                   {q.change != null ? `${positive ? '+' : ''}${fmt(q.change)}` : '—'}
                 </td>
                 <td className={`py-3 px-4 text-right font-medium ${positive ? 'text-primary' : 'text-red-400'}`}>
-                  <span className={`inline-flex items-center gap-0.5`}>
+                  <span className="inline-flex items-center gap-0.5">
                     {positive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                     {q.change_pct != null ? `${positive ? '+' : ''}${fmt(q.change_pct)}%` : '—'}
                   </span>
@@ -64,14 +76,21 @@ export default function StockTable({ quotes, loading }: Props) {
                 <td className="py-3 px-4 text-right text-muted-foreground">{fmt(q.high)}</td>
                 <td className="py-3 px-4 text-right text-muted-foreground">{fmt(q.low)}</td>
                 <td className="py-3 px-4 text-right text-muted-foreground">{fmtMCap(q.market_cap)}</td>
+                {onTrade && (
+                  <td className="py-3 px-4 text-center">
+                    <button
+                      onClick={() => onTrade(q)}
+                      className="px-3 py-1 bg-secondary border border-border rounded-lg text-xs hover:bg-primary/10 hover:border-primary hover:text-primary transition"
+                    >
+                      Trade
+                    </button>
+                  </td>
+                )}
               </tr>
             )
           })}
         </tbody>
       </table>
-      {quotes.length === 0 && (
-        <p className="text-center text-muted-foreground py-8 text-sm">No stocks found.</p>
-      )}
     </div>
   )
 }

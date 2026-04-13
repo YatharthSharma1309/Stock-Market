@@ -18,7 +18,7 @@ async def websocket_prices(websocket: WebSocket):
 
         while True:
             if symbols:
-                loop = asyncio.get_event_loop()
+                loop = asyncio.get_running_loop()
                 quotes = await loop.run_in_executor(None, get_quotes_batch, symbols)
                 await websocket.send_json({"type": "price_update", "data": quotes})
             await asyncio.sleep(15)

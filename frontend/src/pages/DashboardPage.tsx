@@ -1,22 +1,68 @@
-import { TrendingUp, TrendingDown, BarChart2, ArrowRight } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { TrendingUp, TrendingDown, BarChart2, ArrowRight, Briefcase } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
+import api from '@/services/api'
 
-const statCards = [
-  { label: 'Total Portfolio Value', value: '₹10,00,000.00', change: '+0.00%', positive: true },
-  { label: "Today's P&L", value: '₹0.00', change: '+0.00%', positive: true },
-  { label: 'Trades Made', value: '0', change: 'No trades yet', positive: true },
-  { label: 'Learning Progress', value: '0%', change: '0 / 5 modules', positive: true },
-]
+interface PortfolioSummary {
+  virtual_balance: number
+  total_value: number
+  unrealized_pnl: number
+  unrealized_pnl_pct: number
+}
+
+function fmt(n: number, decimals = 2) {
+  return n.toLocaleString('en-IN', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })
+}
 
 export default function DashboardPage() {
   const { payload } = useAuth()
+  const [portfolio, setPortfolio] = useState<PortfolioSummary | null>(null)
+
+  useEffect(() => {
+    api.get('/api/portfolio').then(r => setPortfolio(r.data)).catch(() => {})
+  }, [])
+
+  const pnlPositive = (portfolio?.unrealized_pnl ?? 0) >= 0
+
+  const statCards = [
+    {
+      label: 'Total Portfolio Value',
+      value: portfolio ? `₹${fmt(portfolio.total_value)}` : '₹10,00,000.00',
+      change: portfolio
+        ? `${pnlPositive ? '+' : ''}${fmt(portfolio.unrealized_pnl_pct)}%`
+        : '+0.00%',
+      positive: pnlPositive,
+    },
+    {
+      label: 'Cash Balance',
+      value: portfolio ? `₹${fmt(portfolio.virtual_balance)}` : '₹10,00,000.00',
+      change: 'Available to invest',
+      positive: true,
+    },
+    {
+      label: 'Unrealized P&L',
+      value: portfolio
+        ? `${pnlPositive ? '+' : ''}₹${fmt(portfolio.unrealized_pnl)}`
+        : '₹0.00',
+      change: portfolio
+        ? `${pnlPositive ? '+' : ''}${fmt(portfolio.unrealized_pnl_pct)}%`
+        : '+0.00%',
+      positive: pnlPositive,
+    },
+    {
+      label: 'Learning Progress',
+      value: '0%',
+      change: '0 / 5 modules',
+      positive: true,
+    },
+  ]
 
   return (
     <div className="p-8 space-y-6">
       <div>
         <h2 className="text-2xl font-bold text-foreground">
-          Welcome back{payload?.sub ? `, ${payload.sub.split('@')[0]}` : ''}! 👋
+          Welcome back{payload?.sub ? `, ${payload.sub.split('@')[0]}` : ''}!
         </h2>
         <p className="text-muted-foreground mt-1">Your virtual trading journey. Markets are open.</p>
       </div>
@@ -36,8 +82,11 @@ export default function DashboardPage() {
       </div>
 
       {/* Quick links */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <Link to="/markets" className="lg:col-span-2 bg-card border border-border rounded-xl p-6 hover:border-primary/50 transition group">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <Link
+          to="/markets"
+          className="bg-card border border-border rounded-xl p-6 hover:border-primary/50 transition group"
+        >
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-semibold text-foreground flex items-center gap-2">
               <BarChart2 className="h-4 w-4 text-primary" /> Market Overview
@@ -45,15 +94,23 @@ export default function DashboardPage() {
             <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition" />
           </div>
           <p className="text-sm text-muted-foreground">
-            View live NSE/BSE and global stock prices, indices, and market movers. Click to open Markets.
+            View live NSE/BSE and global stock prices, indices, and market movers.
           </p>
         </Link>
-        <div className="bg-card border border-border rounded-xl p-6">
-          <h3 className="font-semibold text-foreground mb-3">AI Assistant</h3>
+        <Link
+          to="/portfolio"
+          className="bg-card border border-border rounded-xl p-6 hover:border-primary/50 transition group"
+        >
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-semibold text-foreground flex items-center gap-2">
+              <Briefcase className="h-4 w-4 text-primary" /> Portfolio
+            </h3>
+            <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition" />
+          </div>
           <p className="text-sm text-muted-foreground">
-            Your AI trading coach will be available here in Phase 6.
+            Track your virtual holdings, buy/sell stocks, and monitor P&L.
           </p>
-        </div>
+        </Link>
       </div>
     </div>
   )
