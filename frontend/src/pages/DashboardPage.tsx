@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
-import { TrendingUp, TrendingDown, BarChart2, ArrowRight, Briefcase } from 'lucide-react'
+import { TrendingUp, TrendingDown, BarChart2, ArrowRight, Briefcase, GraduationCap, Flame } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import api from '@/services/api'
+import { useLearningProgress } from '@/hooks/useLearningProgress'
+import { TOTAL_LESSONS } from '@/data/learningContent'
 
 interface PortfolioSummary {
   virtual_balance: number
@@ -18,6 +20,7 @@ function fmt(n: number, decimals = 2) {
 export default function DashboardPage() {
   const { payload } = useAuth()
   const [portfolio, setPortfolio] = useState<PortfolioSummary | null>(null)
+  const { totalCompleted, streakDays, isLoading: learnLoading } = useLearningProgress()
 
   useEffect(() => {
     api.get('/api/portfolio').then(r => setPortfolio(r.data)).catch(() => {})
@@ -52,8 +55,8 @@ export default function DashboardPage() {
     },
     {
       label: 'Learning Progress',
-      value: 'Coming Soon',
-      change: 'Phase 5 feature',
+      value: learnLoading ? '…' : `${totalCompleted} / ${TOTAL_LESSONS}`,
+      change: learnLoading ? '' : streakDays > 0 ? `${streakDays} day streak 🔥` : 'Start learning',
       positive: true,
     },
   ]
@@ -82,7 +85,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Quick links */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <Link
           to="/markets"
           className="bg-card border border-border rounded-xl p-6 hover:border-primary/50 transition group"
@@ -109,6 +112,22 @@ export default function DashboardPage() {
           </div>
           <p className="text-sm text-muted-foreground">
             Track your virtual holdings, buy/sell stocks, and monitor P&L.
+          </p>
+        </Link>
+        <Link
+          to="/learn"
+          className="bg-card border border-border rounded-xl p-6 hover:border-primary/50 transition group"
+        >
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-semibold text-foreground flex items-center gap-2">
+              <GraduationCap className="h-4 w-4 text-primary" /> Learning Centre
+            </h3>
+            <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition" />
+          </div>
+          <p className="text-sm text-muted-foreground">
+            {streakDays > 0
+              ? `${streakDays}-day streak! Keep going — ${TOTAL_LESSONS - totalCompleted} lessons remaining.`
+              : 'Learn trading from technical analysis to options strategies.'}
           </p>
         </Link>
       </div>

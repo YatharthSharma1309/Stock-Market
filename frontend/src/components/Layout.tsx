@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation } from 'react-router-dom'
-import { TrendingUp, LayoutDashboard, BarChart2, Briefcase, History, LogOut } from 'lucide-react'
+import { TrendingUp, LayoutDashboard, BarChart2, Briefcase, History, GraduationCap, LogOut } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 
 const navLinks = [
@@ -7,6 +7,7 @@ const navLinks = [
   { icon: BarChart2, label: 'Markets', to: '/markets' },
   { icon: Briefcase, label: 'Portfolio', to: '/portfolio' },
   { icon: History, label: 'Trade History', to: '/trades' },
+  { icon: GraduationCap, label: 'Learn', to: '/learn' },
 ]
 
 export default function Layout() {

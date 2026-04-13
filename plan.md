@@ -177,22 +177,30 @@ Dropped `nsepy` as primary source — `yfinance` covers NSE/BSE/global uniformly
 
 ---
 
-## Phase 5 — Learning Modules
+## Phase 5 — Learning Modules ✅ COMPLETE
 
 **Goal:** Structured educational content with interactive exercises on the simulator.
 
-### Modules
-1. **Technical Analysis** — chart patterns, support/resistance, RSI/MACD/Bollinger
-2. **Fundamental Analysis** — P/E ratio, EPS, reading balance sheets
-3. **Options & Derivatives** — calls, puts, basic strategies (covered call, protective put)
-4. **Intraday Trading** — scalping, momentum, risk management
+### Modules (4 lessons each = 16 total)
+1. **Technical Analysis** — candlesticks, support/resistance, RSI, MACD + Bollinger Bands
+2. **Fundamental Analysis** — P/E ratio, EPS/revenue growth, balance sheets, DCF + comps
+3. **Options & Derivatives** — what are options, payoff profiles, covered call, protective put
+4. **Intraday Trading** — intraday vs positional, scalping + momentum, position sizing, psychology
 
 ### Tasks
-- [ ] Backend: Module/Lesson/Exercise models, progress tracking per user
-- [ ] Frontend: Learning centre page with module cards
-- [ ] Frontend: Lesson viewer (theory content + embedded simulator for exercises)
-- [ ] Frontend: Progress tracking UI (completion badges, streaks)
-- [ ] QA: all modules accessible, progress saves correctly
+- [x] Backend: `LessonProgress` model (user_id, lesson_id, completed_at, UNIQUE constraint)
+- [x] Backend: `GET /api/learning/progress`, `POST /api/learning/complete/{lesson_id}`, `GET /api/learning/progress/{module_id}`
+- [x] Frontend: Learning Centre page (`/learn`) with ProgressBanner + 4 ModuleCards
+- [x] Frontend: Lesson viewer (`/learn/:moduleId`) — sidebar lesson list + content panel
+- [x] Frontend: Progress tracking — streak days, completion badges, optimistic updates
+- [x] QA: lessons accessible, progress saves, idempotent completion, streak computed correctly
+
+### Key implementation details
+- Lesson content hardcoded in `frontend/src/data/learningContent.ts` (no CMS needed)
+- Progress stored in DB; `useLearningProgress` hook fetches once, updates optimistically
+- "Practice" CTAs link to live simulator pages (Markets, StockDetail, Portfolio, Trades)
+- Streak = consecutive UTC days with ≥1 lesson completed (computed server-side)
+- Dashboard "Learning Progress" card now shows real `X / 16 lessons` + streak
 
 ---
 
@@ -280,7 +288,7 @@ VITE_WS_URL=ws://localhost:8000
 - [x] Phase 2 — Live Market Data ✅
 - [x] Phase 3 — Paper Trading Engine ✅
 - [x] Phase 4 — Charts & Technical Indicators ✅
-- [ ] Phase 5 — Learning Modules
+- [x] Phase 5 — Learning Modules ✅
 - [ ] Phase 6 — AI Trading Assistant *(Claude API key configured)*
 - [ ] Phase 7 — UI Polish & Final Features
 
