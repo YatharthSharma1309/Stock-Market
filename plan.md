@@ -124,18 +124,29 @@ Dropped `nsepy` as primary source — `yfinance` covers NSE/BSE/global uniformly
 
 ---
 
-## Phase 3 — Paper Trading Engine
+## Phase 3 — Paper Trading Engine ✅ COMPLETE
 
 **Goal:** Users can buy/sell stocks with virtual money and track their portfolio.
 
 ### Tasks
-- [ ] Backend: Portfolio model, Trade model, virtual wallet (₹10,00,000 starting cash)
-- [ ] Backend: Buy/sell order endpoints (validate price, deduct/add cash, record trade)
-- [ ] Backend: Portfolio value calculation (holdings × current price), P&L endpoint
-- [ ] Frontend: Portfolio dashboard (holdings table, total value, P&L)
-- [ ] Frontend: Buy/sell modal on stock detail page
-- [ ] Frontend: Trade history page
-- [ ] QA: end-to-end trade flow, P&L accuracy
+- [x] Backend: Portfolio model, Trade model, virtual wallet (₹10,00,000 starting cash)
+- [x] Backend: Buy/sell order endpoints (validate price, deduct/add cash, record trade)
+- [x] Backend: Portfolio value calculation (holdings × current price), P&L endpoint
+- [x] Frontend: Portfolio dashboard (holdings table, total value, P&L)
+- [x] Frontend: Buy/sell modal on stock detail page
+- [x] Frontend: Trade history page
+- [x] QA fixes: yfinance upgraded (>=0.2.50), silent errors logged, validation added
+
+### API endpoints added
+- `POST /api/portfolio/buy` — buy shares (avg-cost tracking, balance deduction)
+- `POST /api/portfolio/sell` — sell shares (proceeds added, holdings updated)
+- `GET /api/portfolio` — full portfolio summary with live P&L per holding
+- `GET /api/portfolio/trades` — chronological trade history
+
+### Key implementation details
+- Average buy price recalculated on partial buys: `(old_qty * old_avg + new_qty * price) / total_qty`
+- Holdings deleted automatically when quantity reaches 0
+- Dashboard fetches real portfolio data (not hardcoded)
 
 ---
 
@@ -254,7 +265,7 @@ VITE_WS_URL=ws://localhost:8000
 - [x] Git repository initialized
 - [x] Phase 1 — Foundation & Auth ✅
 - [x] Phase 2 — Live Market Data ✅
-- [ ] Phase 3 — Paper Trading Engine
+- [x] Phase 3 — Paper Trading Engine ✅
 - [ ] Phase 4 — Charts & Technical Indicators
 - [ ] Phase 5 — Learning Modules
 - [ ] Phase 6 — AI Trading Assistant *(Claude API key configured)*
@@ -267,3 +278,5 @@ VITE_WS_URL=ws://localhost:8000
 | `6544f8f` | Initial commit: README + plan.md |
 | `269a594` | Phase 1: Docker + FastAPI backend + React frontend skeleton |
 | `787c265` | Phase 2: Live market data — NSE/BSE + global stocks |
+| `4d0a4ef` | docs: update plan.md with Phase 1 & 2 completion status |
+| `2996c1a` | Phase 3: Paper Trading Engine + Phase 2 QA fixes |
