@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
-import { TrendingUp, TrendingDown, Briefcase, RefreshCw } from 'lucide-react'
+import { TrendingUp, TrendingDown, Briefcase, RefreshCw, Bot } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import api from '@/services/api'
 import TradeModal from '@/components/TradeModal'
 import type { Quote } from '@/hooks/useMarketData'
+import { useAI } from '@/context/AIContext'
 
 interface HoldingOut {
   symbol: string
@@ -53,6 +54,7 @@ export default function PortfolioPage() {
   const [portfolio, setPortfolio] = useState<PortfolioSummary | null>(null)
   const [loading, setLoading] = useState(true)
   const [tradeTarget, setTradeTarget] = useState<HoldingOut | null>(null)
+  const { openWithMessage } = useAI()
 
   async function fetchPortfolio() {
     setLoading(true)
@@ -83,6 +85,16 @@ export default function PortfolioPage() {
           >
             Trade History
           </Link>
+          <button
+            onClick={() => openWithMessage(
+              "Analyse my portfolio. Tell me what's working, what I should reconsider, and any concentration risks.",
+              { type: 'portfolio' }
+            )}
+            className="flex items-center gap-2 px-4 py-2 bg-secondary border border-border rounded-lg text-sm text-foreground hover:border-primary hover:text-primary transition"
+          >
+            <Bot className="h-4 w-4" />
+            Analyse with AI
+          </button>
           <button
             onClick={fetchPortfolio}
             disabled={loading}

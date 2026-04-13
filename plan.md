@@ -204,7 +204,7 @@ Dropped `nsepy` as primary source — `yfinance` covers NSE/BSE/global uniformly
 
 ---
 
-## Phase 6 — AI Trading Assistant
+## Phase 6 — AI Trading Assistant ✅ COMPLETE
 
 **Goal:** Claude-powered chatbot that coaches users on trading.
 
@@ -216,11 +216,35 @@ Dropped `nsepy` as primary source — `yfinance` covers NSE/BSE/global uniformly
 - Market commentary and trend analysis
 
 ### Tasks
-- [ ] Backend: Claude API integration, conversation history per user, portfolio context injection
-- [ ] Backend: `/ai/chat` endpoint (streams responses)
-- [ ] Frontend: Floating AI assistant panel (available on all pages)
-- [ ] Frontend: Context-aware prompts (e.g., "Analyse this stock" button on stock page)
-- [ ] QA: verify responses are accurate and context-aware
+- [x] Backend: Claude API integration (`claude-3-5-haiku-20241022`), conversation history per user (DB-persisted, last 20 fed to Claude)
+- [x] Backend: Portfolio context injection into system prompt (holdings + recent trades)
+- [x] Backend: `POST /api/ai/chat` — SSE streaming response with `X-Accel-Buffering: no`
+- [x] Backend: `GET /api/ai/history` — load last 50 messages; `DELETE /api/ai/history` — clear conversation
+- [x] Frontend: Floating AI assistant panel (`AIAssistantPanel`) — available on all pages via Layout
+- [x] Frontend: `useAIAssistant` hook — native fetch SSE streaming, optimistic message append, history load
+- [x] Frontend: Context-aware "Ask AI" button on Stock Detail page
+- [x] Frontend: "Analyse with AI" button on Portfolio page
+- [x] Frontend: Per-trade "Explain" (MessageSquare) button on Trade History page
+- [x] QA: responses stream correctly, context injected, conversation persists across sessions
+
+### New files
+- `backend/app/models/ai.py` — AIConversation model (UUID PK, composite index on user_id + created_at)
+- `backend/app/schemas/ai.py` — ChatContext, ChatRequest, HistoryMessageOut
+- `backend/app/services/ai.py` — Claude client singleton, portfolio context builder, system prompt builder
+- `backend/app/api/ai.py` — 3 endpoints (chat SSE, history GET, history DELETE)
+- `frontend/src/context/AIContext.tsx` — React context providing `openWithMessage` to all pages
+- `frontend/src/hooks/useAIAssistant.ts` — SSE streaming hook (native fetch, not Axios)
+- `frontend/src/components/ai/ChatMessage.tsx` — user/assistant bubbles with streaming cursor
+- `frontend/src/components/ai/ChatInput.tsx` — auto-resize textarea, Enter to send
+- `frontend/src/components/ai/TypingIndicator.tsx` — 3 animated bounce dots
+- `frontend/src/components/AIAssistantPanel.tsx` — collapsible FAB + 600px panel, `forwardRef` imperative handle
+
+### Key implementation details
+- SSE format: `data: {"type":"delta","text":"..."}` → `data: {"type":"done"}` → `data: [DONE]`
+- Axios cannot stream SSE — `useAIAssistant` uses native `fetch` + `ReadableStream` reader
+- `AIContext` + `forwardRef` pattern avoids prop drilling through Layout → Outlet → any page
+- History pruned to last 50 messages in DB after each assistant reply
+- `X-Accel-Buffering: no` header prevents nginx from batching SSE chunks
 
 ---
 
@@ -289,7 +313,7 @@ VITE_WS_URL=ws://localhost:8000
 - [x] Phase 3 — Paper Trading Engine ✅
 - [x] Phase 4 — Charts & Technical Indicators ✅
 - [x] Phase 5 — Learning Modules ✅
-- [ ] Phase 6 — AI Trading Assistant *(Claude API key configured)*
+- [x] Phase 6 — AI Trading Assistant ✅
 - [ ] Phase 7 — UI Polish & Final Features
 
 ## Git History

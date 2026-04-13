@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import { TrendingUp, TrendingDown } from 'lucide-react'
+import { TrendingUp, TrendingDown, MessageSquare } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import api from '@/services/api'
+import { useAI } from '@/context/AIContext'
 
 interface TradeOut {
   id: string
@@ -22,6 +23,7 @@ function fmt(n: number | null, decimals = 2) {
 export default function TradesPage() {
   const [trades, setTrades] = useState<TradeOut[]>([])
   const [loading, setLoading] = useState(true)
+  const { openWithMessage } = useAI()
 
   useEffect(() => {
     api.get('/api/portfolio/trades')
@@ -66,18 +68,20 @@ export default function TradesPage() {
                   <th className="py-3 px-4 text-muted-foreground font-medium text-right">Qty</th>
                   <th className="py-3 px-4 text-muted-foreground font-medium text-right">Price</th>
                   <th className="py-3 px-4 text-muted-foreground font-medium text-right">Total</th>
+                  <th className="py-3 px-4 text-muted-foreground font-medium text-center">AI</th>
                 </tr>
               </thead>
               <tbody>
-                {trades.map(t => (
+                {trades.map(t => {
+                  const displaySym = t.symbol.replace('.NS', '').replace('.BO', '')
+                  const tradeDate = new Date(t.created_at).toLocaleDateString('en-IN')
+                  return (
                   <tr key={t.id} className="border-b border-border/50 hover:bg-secondary/30 transition">
                     <td className="py-3 px-4 text-muted-foreground whitespace-nowrap">
-                      {new Date(t.created_at).toLocaleDateString('en-IN')}{' '}
+                      {tradeDate}{' '}
                       {new Date(t.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
                     </td>
-                    <td className="py-3 px-4 font-semibold text-primary">
-                      {t.symbol.replace('.NS', '').replace('.BO', '')}
-                    </td>
+                    <td className="py-3 px-4 font-semibold text-primary">{displaySym}</td>
                     <td className="py-3 px-4 text-foreground">{t.name}</td>
                     <td className="py-3 px-4 text-center">
                       <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold ${
@@ -94,8 +98,21 @@ export default function TradesPage() {
                     <td className="py-3 px-4 text-right text-foreground">{t.quantity}</td>
                     <td className="py-3 px-4 text-right text-foreground">₹{fmt(t.price)}</td>
                     <td className="py-3 px-4 text-right font-medium text-foreground">₹{fmt(t.total_value)}</td>
+                    <td className="py-3 px-4 text-center">
+                      <button
+                        onClick={() => openWithMessage(
+                          `Explain this trade: I ${t.trade_type === 'buy' ? 'bought' : 'sold'} ${t.quantity} shares of ${t.name} (${displaySym}) at ₹${fmt(t.price)} on ${tradeDate}. Was this a good decision?`,
+                          { type: 'trade', symbol: t.symbol, name: t.name, trade_type: t.trade_type, quantity: t.quantity, trade_date: tradeDate }
+                        )}
+                        className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition"
+                        title="Ask AI to explain this trade"
+                      >
+                        <MessageSquare className="h-3.5 w-3.5" />
+                      </button>
+                    </td>
                   </tr>
-                ))}
+                  )
+                })}
               </tbody>
             </table>
           </div>

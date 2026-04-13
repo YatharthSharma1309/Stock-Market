@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Bot } from 'lucide-react'
 import api from '@/services/api'
 import type { Quote } from '@/hooks/useMarketData'
 import StockChart from '@/components/StockChart'
 import TradeModal from '@/components/TradeModal'
+import { useAI } from '@/context/AIContext'
 
 function fmtBig(n: number): string {
   if (n >= 1e12) return `${(n / 1e12).toFixed(2)}T`
@@ -21,6 +22,7 @@ function fmtPrice(n: number | null, currency: string): string {
 export default function StockDetailPage() {
   const { symbol } = useParams<{ symbol: string }>()
   const navigate = useNavigate()
+  const { openWithMessage } = useAI()
   const [quote, setQuote] = useState<Quote | null>(null)
   const [tradeOpen, setTradeOpen] = useState(false)
 
@@ -77,6 +79,16 @@ export default function StockDetailPage() {
                 </p>
               )}
             </div>
+            <button
+              onClick={() => openWithMessage(
+                `Analyse ${quote.name} (${displaySymbol}). Current price: ${currency}${quote.price?.toFixed(2)}, change today: ${quote.change_pct != null ? (quote.change_pct >= 0 ? '+' : '') + quote.change_pct.toFixed(2) + '%' : 'unknown'}.`,
+                { type: 'stock', symbol, name: quote.name, price: quote.price ?? undefined, change_pct: quote.change_pct ?? undefined }
+              )}
+              className="flex items-center gap-2 px-4 py-2.5 bg-secondary border border-border text-foreground rounded-xl text-sm font-medium hover:border-primary hover:text-primary transition"
+            >
+              <Bot className="h-4 w-4" />
+              Ask AI
+            </button>
             <button
               onClick={() => setTradeOpen(true)}
               className="px-5 py-2.5 bg-primary text-primary-foreground rounded-xl font-semibold text-sm hover:bg-primary/90 transition"
