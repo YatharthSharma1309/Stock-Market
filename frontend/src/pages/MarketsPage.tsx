@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Search, RefreshCw } from 'lucide-react'
 import api from '@/services/api'
 import IndexCard from '@/components/IndexCard'
@@ -28,6 +29,7 @@ export default function MarketsPage() {
   const [searchResults, setSearchResults] = useState<{ symbol: string; name: string }[]>([])
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
   const [tradeTarget, setTradeTarget] = useState<Quote | null>(null)
+  const navigate = useNavigate()
 
   // live WebSocket updates for currently visible stocks
   const activeSymbols = tab === 'nse'
@@ -132,7 +134,7 @@ export default function MarketsPage() {
             {searchResults.map(s => (
               <button
                 key={s.symbol}
-                onClick={() => setSearch('')}
+                onClick={() => { setSearch(''); navigate(`/stocks/${s.symbol}`) }}
                 className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-secondary text-left transition"
               >
                 <span className="font-medium text-primary text-sm">{s.symbol}</span>

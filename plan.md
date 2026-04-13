@@ -150,17 +150,30 @@ Dropped `nsepy` as primary source — `yfinance` covers NSE/BSE/global uniformly
 
 ---
 
-## Phase 4 — Charts & Technical Indicators
+## Phase 4 — Charts & Technical Indicators ✅ COMPLETE
 
 **Goal:** Professional-grade financial charts with key indicators.
 
 ### Tasks
-- [ ] Frontend: Integrate TradingView Lightweight Charts
-- [ ] Backend: Historical OHLCV data endpoint (via yfinance)
-- [ ] Frontend: Candlestick chart component with time range selector (1D/1W/1M/3M/1Y)
-- [ ] Frontend: Indicator overlays — SMA, EMA, Bollinger Bands
-- [ ] Frontend: Indicator panels — RSI, MACD, Volume
-- [ ] QA: verify chart renders correctly, indicators are accurate
+- [x] Frontend: Integrate TradingView Lightweight Charts (`lightweight-charts ^4.0.0`)
+- [x] Backend: Historical OHLCV data endpoint (via yfinance) — `GET /api/market/history/{symbol}?period=`
+- [x] Frontend: Candlestick chart component with time range selector (1D/1W/1M/3M/1Y)
+- [x] Frontend: Indicator overlays — SMA 20, SMA 50, EMA 20, Bollinger Bands
+- [x] Frontend: Indicator panels — RSI (14), MACD (12/26/9), Volume histogram
+- [x] QA: chart renders correctly, indicators accurate
+
+### New files
+- `frontend/src/lib/indicators.ts` — pure JS: SMA, EMA, BB, RSI (Wilder), MACD
+- `frontend/src/hooks/useStockHistory.ts` — fetches OHLCV from `/api/market/history`
+- `frontend/src/components/StockChart.tsx` — three-pane chart (main + oscillator + volume), time-scale synced
+- `frontend/src/pages/StockDetailPage.tsx` — `/stocks/:symbol` route with quote header, chart, stats grid, Trade button
+
+### Key implementation details
+- Symbol names in `StockTable` are clickable links → `/stocks/:symbol`
+- Search results navigate to stock detail page
+- All indicators computed client-side from OHLCV data (O(n), no extra backend endpoints)
+- ResizeObserver keeps all three chart panes responsive
+- Time scales synced across panes via `subscribeVisibleLogicalRangeChange`
 
 ---
 
@@ -266,7 +279,7 @@ VITE_WS_URL=ws://localhost:8000
 - [x] Phase 1 — Foundation & Auth ✅
 - [x] Phase 2 — Live Market Data ✅
 - [x] Phase 3 — Paper Trading Engine ✅
-- [ ] Phase 4 — Charts & Technical Indicators
+- [x] Phase 4 — Charts & Technical Indicators ✅
 - [ ] Phase 5 — Learning Modules
 - [ ] Phase 6 — AI Trading Assistant *(Claude API key configured)*
 - [ ] Phase 7 — UI Polish & Final Features

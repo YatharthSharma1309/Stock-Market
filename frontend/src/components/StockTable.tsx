@@ -1,4 +1,5 @@
 import { TrendingUp, TrendingDown, Loader2 } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import type { Quote } from '@/hooks/useMarketData'
 
 interface Props {
@@ -60,7 +61,9 @@ export default function StockTable({ quotes, loading, onTrade }: Props) {
             return (
               <tr key={q.symbol} className="border-b border-border/50 hover:bg-secondary/30 transition">
                 <td className="py-3 px-4 font-semibold text-primary">
-                  {q.symbol.replace('.NS', '').replace('.BO', '')}
+                  <Link to={`/stocks/${q.symbol}`} className="hover:underline underline-offset-2">
+                    {q.symbol.replace('.NS', '').replace('.BO', '')}
+                  </Link>
                 </td>
                 <td className="py-3 px-4 text-foreground">{q.name}</td>
                 <td className="py-3 px-4 text-right font-medium text-foreground">{fmt(q.price)}</td>

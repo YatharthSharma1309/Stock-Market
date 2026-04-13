@@ -5,6 +5,7 @@ import DashboardPage from '@/pages/DashboardPage'
 import MarketsPage from '@/pages/MarketsPage'
 import PortfolioPage from '@/pages/PortfolioPage'
 import TradesPage from '@/pages/TradesPage'
+import StockDetailPage from '@/pages/StockDetailPage'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import Layout from '@/components/Layout'
 
@@ -19,6 +20,7 @@ export default function App() {
           <Route path="/markets" element={<MarketsPage />} />
           <Route path="/portfolio" element={<PortfolioPage />} />
           <Route path="/trades" element={<TradesPage />} />
+          <Route path="/stocks/:symbol" element={<StockDetailPage />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
