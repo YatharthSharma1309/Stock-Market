@@ -93,7 +93,7 @@ def build_system_prompt(user: User, context: ChatContext | None, db: Session) ->
     if context:
         if context.type == "stock" and context.symbol:
             cur = _currency(context.symbol)
-            price_str = f"{cur}{context.price:.2f}" if context.price else "unknown"
+            price_str = f"{cur}{context.price:.2f}" if context.price is not None else "unknown"
             chg_str = f"{context.change_pct:+.2f}%" if context.change_pct is not None else "unknown"
             parts.append(
                 f"\nThe user is currently viewing: {context.symbol}"
@@ -104,10 +104,11 @@ def build_system_prompt(user: User, context: ChatContext | None, db: Session) ->
             parts.append("\nThe user wants an analysis of their overall portfolio.")
         elif context.type == "trade" and context.symbol:
             cur = _currency(context.symbol)
+            price_str = f"{cur}{context.price:.2f}" if context.price is not None else "unknown"
             parts.append(
                 f"\nThe user is asking about this specific trade:\n"
                 f"{(context.trade_type or '').upper()} {context.quantity or ''} {context.symbol} "
-                f"@ {cur}{context.price:.2f}" + (f" on {context.trade_date}" if context.trade_date else "")
+                f"@ {price_str}" + (f" on {context.trade_date}" if context.trade_date else "")
             )
 
     return "\n\n".join(parts)

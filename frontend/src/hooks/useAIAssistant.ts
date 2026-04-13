@@ -71,9 +71,10 @@ export function useAIAssistant() {
         const chunk = decoder.decode(value, { stream: true })
         const lines = chunk.split('\n').filter(l => l.startsWith('data: '))
 
+        let streamDone = false
         for (const line of lines) {
           const payload = line.slice(6).trim()
-          if (payload === '[DONE]') break
+          if (payload === '[DONE]') { streamDone = true; break }
 
           try {
             const event = JSON.parse(payload)
@@ -99,6 +100,7 @@ export function useAIAssistant() {
             }
           } catch { /* skip malformed lines */ }
         }
+        if (streamDone) break
       }
     } catch (e: unknown) {
       if ((e as Error)?.name === 'AbortError') return

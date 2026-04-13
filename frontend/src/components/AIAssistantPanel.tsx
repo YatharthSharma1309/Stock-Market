@@ -35,7 +35,11 @@ const AIAssistantPanel = forwardRef<AIAssistantHandle>((_, ref) => {
         }
       })
     }
-  }, [isOpen])
+  // loadHistory is stable (only re-creates when historyLoaded flips once).
+  // sendMessage is stable between streams. Adding both satisfies the exhaustive-deps rule
+  // while remaining safe: the extra invocations are no-ops (loadHistory returns early
+  // once loaded; pendingRef is null after the first send).
+  }, [isOpen, loadHistory, sendMessage])
 
   // Auto-scroll to bottom
   useEffect(() => {
