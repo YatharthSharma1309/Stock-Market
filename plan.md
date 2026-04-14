@@ -277,6 +277,164 @@ Dropped `nsepy` as primary source — `yfinance` covers NSE/BSE/global uniformly
 
 ---
 
+## Phase 8 — Testing & QA 🔄 IN PROGRESS
+
+**Goal:** Comprehensive test coverage across all layers before production deployment.
+
+### Tasks
+- [x] Frontend unit tests: Vitest — 22 tests covering all 5 indicator functions (`computeSMA`, `computeEMA`, `computeBB`, `computeRSI`, `computeMACD`)
+- [x] Backend unit tests: pytest — 22 tests covering `_safe_float`, `search_stocks`, Redis cache logic, portfolio P&L math
+- [ ] Backend integration tests: FastAPI `TestClient` + SQLite in-memory DB (no Docker needed)
+  - Auth flow: register → login → JWT protected endpoints
+  - Portfolio: buy → sell → portfolio summary → trade history
+  - Leaderboard: multi-user P&L ranking
+- [ ] Frontend component tests: `@testing-library/react` + Vitest
+  - `TradeModal`: renders, validates quantity, calls API on submit
+  - `StockTable`: renders rows, search filter, clickable links
+  - `PortfolioPage`: shows holdings, P&L colors correct
+- [ ] E2E tests: Playwright against the running Docker stack
+  - Happy path: register → buy stock → view portfolio → check leaderboard
+  - Auth guard: unauthenticated access redirects to `/login`
+- [ ] Performance audit: Lighthouse CI (target 90+ on Performance, Accessibility, Best Practices)
+- [ ] QA: full regression across Phases 1–7
+
+### Test file locations
+- `frontend/src/lib/indicators.test.ts` — ✅ 22 passing
+- `backend/tests/test_market_service.py` — ✅ 22 passing
+- `backend/tests/test_api_auth.py` — planned
+- `backend/tests/test_api_portfolio.py` — planned
+- `frontend/src/components/__tests__/` — planned
+- `e2e/` — planned (Playwright)
+
+---
+
+## Phase 9 — Production Hardening
+
+**Goal:** Make the Docker stack production-ready: optimised builds, secrets management, multi-worker backend, proper nginx config.
+
+### Tasks
+
+#### Docker
+- [ ] `frontend/Dockerfile.prod` — multi-stage: `node:20-alpine` build stage → `nginx:alpine` serve stage
+  - Stage 1: `npm ci && npm run build` → `/app/dist`
+  - Stage 2: copy `dist/` into nginx, serve static at port 80
+- [ ] `backend/Dockerfile.prod` — no volume mount, `gunicorn -k uvicorn.workers.UvicornWorker --workers 4`
+- [ ] `docker-compose.prod.yml` — production overrides:
+  - Remove `volumes: ./backend:/app` (no hot-reload)
+  - Add `restart: unless-stopped` to all services
+  - Expose only port 80/443 via nginx (no direct 3000/8000)
+  - Pass secrets via env file, not inline
+
+#### Nginx (production config)
+- [ ] Serve frontend as static files (no proxy to Vite dev server)
+- [ ] Add `gzip` compression for JS/CSS/JSON
+- [ ] Add security headers: `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`
+- [ ] Add cache headers: `Cache-Control: public, max-age=31536000` for hashed assets, `no-cache` for `index.html`
+- [ ] Rate limiting: `limit_req_zone` on `/api/` (prevent abuse of yfinance quota)
+- [ ] Placeholder `server` block ready for HTTPS (Phase 10)
+
+#### Backend
+- [ ] Replace `Base.metadata.create_all` with Alembic migrations (proper schema versioning)
+  - `alembic init alembic`
+  - `env.py` wired to `settings.DATABASE_URL`
+  - Initial migration from current models
+- [ ] SQLAlchemy connection pool tuning: `pool_size=10, max_overflow=20, pool_pre_ping=True`
+- [ ] `SECRET_KEY` must be ≥32 random bytes — add startup validation
+- [ ] Structured JSON logging (`python-json-logger`) for production log aggregation
+
+#### Redis
+- [ ] Add password: `requirepass` in Redis config + `REDIS_URL=redis://:password@redis:6379`
+- [ ] Enable persistence: `appendonly yes` in `redis.conf`
+- [ ] Add `redis_data` named volume to `docker-compose.prod.yml`
+
+#### Environment
+- [ ] Create `.env.example` with all required keys and safe placeholder values
+- [ ] Add `.env` to `.gitignore` (must not be committed)
+- [ ] Document secret generation: `openssl rand -hex 32` for `SECRET_KEY`
+
+### Key implementation details
+- Dev stack (`docker-compose.yml`) stays as-is for local development
+- Prod stack (`docker-compose.prod.yml`) extends/overrides for deployment: `docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d`
+- Frontend build output is ~200KB gzipped; nginx handles 1000s of concurrent users from static files
+- 4 uvicorn workers handle concurrent API + WebSocket connections; yfinance calls are I/O-bound so they benefit from async
+
+---
+
+## Phase 10 — Cloud Deployment & CI/CD
+
+**Goal:** Deploy to a public URL with HTTPS, automated deployments on push, monitoring, and DB backups.
+
+### Deployment target options
+
+| Option | Pros | Cons | Recommended for |
+|--------|------|------|-----------------|
+| **DigitalOcean Droplet** (VPS) | Full control, cheap ($6/mo), Docker Compose works natively | Manual SSL setup, no auto-scaling | This project ✅ |
+| **Railway** | Git push deploy, managed Postgres/Redis, zero-config SSL | Less control, cost scales with usage | Fast prototypes |
+| **AWS EC2 + RDS** | Enterprise-grade, fine-grained IAM | Complex setup, higher cost | Production SaaS |
+| **Fly.io** | Docker-native, free tier, global edge | Limited persistent disk | Stateless APIs |
+
+**Recommended:** DigitalOcean Droplet (2 vCPU / 4 GB RAM) — ~$18/month, sufficient for 500+ concurrent users.
+
+### Tasks
+
+#### VPS Setup
+- [ ] Provision Ubuntu 24.04 LTS droplet (min 2 vCPU / 4 GB)
+- [ ] Harden: non-root sudo user, SSH key auth only, `ufw` firewall (allow 22/80/443)
+- [ ] Install Docker Engine + Docker Compose plugin
+- [ ] Clone repo, create `.env` from `.env.example`
+
+#### SSL / HTTPS
+- [ ] Point domain A record → droplet IP (or use DigitalOcean managed DNS)
+- [ ] Install `certbot` + `python3-certbot-nginx`
+- [ ] Run `certbot --nginx -d yourdomain.com -d www.yourdomain.com`
+- [ ] Update nginx config: HTTP → HTTPS redirect, `ssl_certificate` paths
+- [ ] Add `443` listener to `docker-compose.prod.yml` nginx service
+- [ ] Set up certbot auto-renew: `systemctl enable certbot.timer`
+
+#### CI/CD — GitHub Actions
+- [ ] `.github/workflows/test.yml` — runs on every push/PR:
+  ```
+  jobs:
+    test-backend:  python -m pytest backend/tests/ -v
+    test-frontend: cd frontend && npm ci && npm test
+  ```
+- [ ] `.github/workflows/deploy.yml` — runs on push to `main`:
+  ```
+  jobs:
+    deploy:
+      SSH into droplet
+      git pull
+      docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+  ```
+  Uses GitHub Secrets: `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_KEY`
+
+#### Monitoring & Observability
+- [ ] Uptime monitoring: UptimeRobot (free) — ping `/api/health` every 5 minutes, alert on downtime
+- [ ] Error tracking: Sentry (free tier) — `sentry-sdk` in FastAPI, `@sentry/react` in frontend
+- [ ] Log aggregation: `docker compose logs --tail=100 -f` or ship to Logtail (free tier)
+- [ ] PostgreSQL metrics: `pg_stat_statements` + Grafana (optional)
+
+#### Database Backups
+- [ ] Cron job on the droplet: `pg_dump` daily → compressed → upload to S3/Spaces
+  ```bash
+  # /etc/cron.d/stocksim-backup
+  0 2 * * * root docker exec stocksim-postgres pg_dump -U $POSTGRES_USER $POSTGRES_DB | gzip > /backups/$(date +\%F).sql.gz
+  ```
+- [ ] Retain 7 days of backups; delete older files automatically
+- [ ] Test restore procedure before going live
+
+### Post-deployment checklist
+- [ ] HTTPS works, HTTP redirects to HTTPS
+- [ ] `/api/health` returns `{"status":"ok","database":"connected","redis":"connected"}`
+- [ ] WebSocket prices stream on the Markets page
+- [ ] AI Assistant responds (CLAUDE_API_KEY is set in `.env`)
+- [ ] Register a test user, make a trade, verify leaderboard
+- [ ] Lighthouse score ≥ 90 on the production URL
+- [ ] Sentry receives a test error
+- [ ] UptimeRobot alert is configured
+
+---
+
 ## How to Run
 
 ```bash
@@ -329,6 +487,9 @@ VITE_WS_URL=ws://localhost:8000
 - [x] Phase 5 — Learning Modules ✅
 - [x] Phase 6 — AI Trading Assistant ✅
 - [x] Phase 7 — UI Polish & Final Features ✅
+- [ ] Phase 8 — Testing & QA 🔄 (unit tests done, integration + E2E pending)
+- [ ] Phase 9 — Production Hardening
+- [ ] Phase 10 — Cloud Deployment & CI/CD
 
 ## Git History
 
