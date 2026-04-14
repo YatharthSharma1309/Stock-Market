@@ -325,6 +325,7 @@ Dropped `nsepy` as primary source — `yfinance` covers NSE/BSE/global uniformly
   - `restart: unless-stopped` on all services
   - Redis has password + `appendonly yes` persistence
   - `redis_data` named volume for Redis persistence
+  - Verified with `docker compose config`: frontend port 3000, backend port 8000, and backend source mount are reset in production
 
 #### Nginx (production config)
 - [x] `nginx/nginx.prod.conf` — production nginx replacing `nginx.conf`
@@ -393,8 +394,9 @@ Dropped `nsepy` as primary source — `yfinance` covers NSE/BSE/global uniformly
 - [ ] Point domain A record → droplet IP (or use DigitalOcean managed DNS)
 - [ ] Install `certbot` + `python3-certbot-nginx`
 - [ ] Run `certbot --nginx -d yourdomain.com -d www.yourdomain.com`
-- [ ] Update nginx config: HTTP → HTTPS redirect, `ssl_certificate` paths
+- [x] Add HTTPS-ready nginx example with HTTP-to-HTTPS redirect and certificate paths
 - [ ] Add `443` listener to `docker-compose.prod.yml` nginx service
+- [x] Add `docker-compose.https.yml` for HTTPS port and certificate mounts after certificates exist
 - [ ] Set up certbot auto-renew: `systemctl enable certbot.timer`
 
 #### CI/CD — GitHub Actions
@@ -408,6 +410,8 @@ Dropped `nsepy` as primary source — `yfinance` covers NSE/BSE/global uniformly
   - Health check: `curl /api/health` after 10s; fails deploy if unhealthy
   - `concurrency` guard: only one deploy runs at a time, never cancelled mid-flight
   - Uses GitHub Secrets: `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_KEY`, plus all app secrets
+- [x] `docs/deployment.md` runbook documents VPS setup, required secrets, deploy flow, HTTPS activation, smoke tests, and backup restore test
+- [x] `docs/current-status.md` tracks the live project status and remaining external infrastructure steps
 
 #### Monitoring & Observability
 - [ ] Uptime monitoring: UptimeRobot (free) — ping `/api/health` every 5 minutes, alert on downtime
@@ -422,6 +426,7 @@ Dropped `nsepy` as primary source — `yfinance` covers NSE/BSE/global uniformly
   0 2 * * * root docker exec stocksim-postgres pg_dump -U $POSTGRES_USER $POSTGRES_DB | gzip > /backups/$(date +\%F).sql.gz
   ```
 - [ ] Retain 7 days of backups; delete older files automatically
+- [x] Add database restore helper script
 - [ ] Test restore procedure before going live
 
 ### Post-deployment checklist
@@ -490,7 +495,7 @@ VITE_WS_URL=ws://localhost:8000
 - [x] Phase 7 — UI Polish & Final Features ✅
 - [ ] Phase 8 — Testing & QA 🔄 (unit tests done, integration + E2E pending)
 - [x] Phase 9 — Production Hardening ✅
-- [ ] Phase 10 — Cloud Deployment & CI/CD 🔄 (CI/CD done, VPS deploy + SSL pending)
+- [ ] Phase 10 — Cloud Deployment & CI/CD 🔄 (repo-side deploy prep done; external VPS, DNS, cert issuance, monitoring, smoke tests, and go-live pending)
 
 ## Git History
 

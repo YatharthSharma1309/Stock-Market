@@ -25,7 +25,7 @@ DEST="${BACKUP_DIR}/${FILENAME}"
 
 mkdir -p "${BACKUP_DIR}"
 
-echo "[backup] dumping ${POSTGRES_DB} → ${DEST}"
+echo "[backup] dumping ${POSTGRES_DB} to ${DEST}"
 pg_dump \
   -h "${POSTGRES_HOST}" \
   -p "${POSTGRES_PORT}" \
@@ -36,7 +36,6 @@ pg_dump \
 
 echo "[backup] done: ${DEST} ($(du -sh "${DEST}" | cut -f1))"
 
-# Prune backups older than RETAIN_DAYS
-find "${BACKUP_DIR}" -name "${POSTGRES_DB}_*.sql.gz" -mtime +${RETAIN_DAYS} -print -delete
+find "${BACKUP_DIR}" -name "${POSTGRES_DB}_*.sql.gz" -mtime +"${RETAIN_DAYS}" -print -delete
 
 echo "[backup] retention: kept last ${RETAIN_DAYS} days"

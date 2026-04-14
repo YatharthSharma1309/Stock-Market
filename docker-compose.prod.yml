@@ -1,24 +1,21 @@
-# Production overrides — used together with docker-compose.yml:
+# Production overrides used together with docker-compose.yml:
 #   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
-#
-# This file only declares what CHANGES in production; everything else inherits
-# from docker-compose.yml.
 
 services:
-
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile.prod        # multi-stage: Vite build → nginx static
-    ports: []                            # don't expose 3000 directly in prod
+      dockerfile: Dockerfile.prod
+    ports: !reset []
+    environment: !reset []
     restart: unless-stopped
-    environment: []                      # no VITE_* env vars needed at runtime
 
   backend:
     build:
       context: ./backend
-      dockerfile: Dockerfile.prod        # gunicorn + 4 uvicorn workers
-    volumes: []                          # remove dev source-mount (baked into image)
+      dockerfile: Dockerfile.prod
+    ports: !reset []
+    volumes: !reset []
     restart: unless-stopped
     environment:
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
@@ -63,7 +60,6 @@ services:
       - PGPASSWORD=${POSTGRES_PASSWORD}
       - BACKUP_DIR=/backups
       - RETAIN_DAYS=${BACKUP_RETAIN_DAYS:-7}
-    # Run daily at 02:00 UTC using supercronic
     entrypoint: >
       sh -c "
         apk add --no-cache supercronic &&

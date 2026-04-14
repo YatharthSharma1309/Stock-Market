@@ -21,7 +21,7 @@ The core product is implemented through production hardening. Cloud deployment i
 | 7 | UI Polish, Leaderboard, Mobile UX | Complete |
 | 8 | Testing and QA | Mostly complete; backend and frontend test suites exist, E2E and full regression still pending |
 | 9 | Production Docker Hardening | Complete |
-| 10 | Cloud Deployment and CI/CD | CI/CD files complete; VPS, SSL, uptime monitoring, and production go-live still pending |
+| 10 | Cloud Deployment and CI/CD | Repo-side deployment prep complete; VPS, DNS, SSL activation, uptime monitoring, and production go-live still pending |
 
 ## Features
 
@@ -35,6 +35,8 @@ The core product is implemented through production hardening. Cloud deployment i
 - Dark and light themes, mobile sidebar, skeleton loading states, toasts, and error boundary
 - Production Docker setup with Nginx, gzip, security headers, rate limiting, Redis persistence, Sentry support, and database backups
 - GitHub Actions workflows for tests and deployment
+- Deployment runbook and HTTPS Nginx example for production rollout
+- HTTPS Compose override and database restore helper for go-live operations
 
 ## Tech Stack
 
@@ -105,9 +107,18 @@ Production mode uses:
 
 - Multi-stage frontend build served by Nginx
 - Gunicorn with Uvicorn workers for FastAPI
+- Dev-only frontend/backend ports and backend source mounts removed by the production override
 - Redis password and append-only persistence
 - Nginx production config with gzip, security headers, API rate limiting, and SSE support
 - Scheduled PostgreSQL backups through the `db-backup` service
+
+The deployment checklist is maintained in [docs/deployment.md](docs/deployment.md). The latest project status is tracked in [docs/current-status.md](docs/current-status.md).
+
+After certificates exist on the server, HTTPS mode can be started with:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.https.yml up -d --build
+```
 
 ## Testing
 
@@ -149,7 +160,7 @@ Stock Market/
 
 - Provision and harden the production VPS
 - Configure domain DNS and HTTPS certificates
-- Add production SSL listener and HTTP-to-HTTPS redirect
+- Activate the HTTPS Nginx config with the real domain and certificates
 - Configure uptime monitoring
 - Run full E2E and Lighthouse checks against production
 - Test backup restore procedure before go-live

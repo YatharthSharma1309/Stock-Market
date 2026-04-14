@@ -1,13 +1,13 @@
 name: Tests
 
 on:
+  workflow_call:
   push:
     branches: ["master", "main"]
   pull_request:
     branches: ["master", "main"]
 
 jobs:
-  # ── Backend: pytest ────────────────────────────────────────────────────────
   test-backend:
     name: Backend (pytest)
     runs-on: ubuntu-latest
@@ -35,7 +35,6 @@ jobs:
           REDIS_URL: redis://localhost:6379
           SECRET_KEY: ci-test-secret-key-32-bytes-xxxx
 
-  # ── Frontend: Vitest ───────────────────────────────────────────────────────
   test-frontend:
     name: Frontend (Vitest)
     runs-on: ubuntu-latest
@@ -58,7 +57,6 @@ jobs:
         working-directory: frontend
         run: npm test
 
-  # ── Frontend: TypeScript type-check ───────────────────────────────────────
   typecheck:
     name: TypeScript
     runs-on: ubuntu-latest
