@@ -1,118 +1,158 @@
 # StockSim Pro
 
-A world-class stock market simulator for learning and practising trading — powered by real NSE/BSE and global market data, with an integrated AI trading assistant.
+A full-stack stock market simulator for learning and practicing trading, powered by live NSE/BSE and global market data with an integrated AI trading assistant.
 
-## What is StockSim Pro?
+## What Is StockSim Pro?
 
-StockSim Pro is a full-stack paper trading platform designed to teach prospective traders how the stock market works. Users get a virtual portfolio, real-time stock prices, professional-grade charts with technical indicators, structured learning modules, and an AI assistant that coaches them through their trades.
+StockSim Pro is a paper trading platform for learning how markets work without risking real money. Users get a virtual portfolio, live market prices, technical charts, structured lessons, a leaderboard, and an AI assistant that can explain concepts and review portfolio decisions.
+
+## Current Status
+
+The core product is implemented through production hardening. Cloud deployment is partially prepared but not yet completed.
+
+| Phase | Area | Status |
+|-------|------|--------|
+| 1 | Foundation, Docker, Auth, User Accounts | Complete |
+| 2 | Live Market Data for NSE/BSE and Global Stocks | Complete |
+| 3 | Paper Trading Engine | Complete |
+| 4 | Charts and Technical Indicators | Complete |
+| 5 | Learning Modules | Complete |
+| 6 | AI Trading Assistant | Complete |
+| 7 | UI Polish, Leaderboard, Mobile UX | Complete |
+| 8 | Testing and QA | Mostly complete; backend and frontend test suites exist, E2E and full regression still pending |
+| 9 | Production Docker Hardening | Complete |
+| 10 | Cloud Deployment and CI/CD | CI/CD files complete; VPS, SSL, uptime monitoring, and production go-live still pending |
 
 ## Features
 
-- **Live Market Data** — Real NSE/BSE (Indian) and NYSE/NASDAQ (global) stock prices via Yahoo Finance
-- **Paper Trading** — Buy and sell stocks with virtual money, track P&L in real time
-- **Professional Charts** — Candlestick charts with RSI, MACD, Bollinger Bands, EMA, SMA
-- **Learning Modules** — Technical analysis, fundamental analysis, options trading, intraday strategies
-- **AI Trading Assistant** — Powered by Claude API; analyses your portfolio, explains concepts, coaches your decisions
-- **User Accounts** — Register, login, save portfolio and trade history
-- **Leaderboard** — Compare your virtual P&L with other users
+- Live market data for NSE, BSE, NYSE, NASDAQ, and major indices via Yahoo Finance
+- Paper trading with virtual cash, buy/sell orders, holdings, trade history, and live P&L
+- Candlestick charts with SMA, EMA, Bollinger Bands, RSI, MACD, and volume
+- Structured learning center with progress tracking and streaks
+- Claude-powered AI trading assistant with streamed responses and portfolio context
+- User registration, login, JWT authentication, and protected routes
+- Leaderboard ranked by portfolio performance
+- Dark and light themes, mobile sidebar, skeleton loading states, toasts, and error boundary
+- Production Docker setup with Nginx, gzip, security headers, rate limiting, Redis persistence, Sentry support, and database backups
+- GitHub Actions workflows for tests and deployment
 
 ## Tech Stack
 
 | Layer | Technology |
-|-------|-----------|
-| Frontend | React + TypeScript + Vite |
-| UI | TailwindCSS + ShadCN UI |
+|-------|------------|
+| Frontend | React, TypeScript, Vite |
+| Styling | TailwindCSS |
 | Charts | TradingView Lightweight Charts |
-| Backend | Python + FastAPI |
-| Database | PostgreSQL |
+| Backend | Python, FastAPI |
+| Database | PostgreSQL, SQLAlchemy |
 | Cache | Redis |
-| AI | Claude API (Anthropic) |
-| Real-time | WebSockets |
-| Container | Docker + Docker Compose |
+| AI | Claude API via Anthropic SDK |
+| Real-time | WebSockets and SSE |
+| Testing | Pytest, Vitest, React Testing Library |
+| Container | Docker, Docker Compose |
 | Proxy | Nginx |
+| Observability | Sentry |
+| CI/CD | GitHub Actions |
 
 ## Getting Started
 
 ### Prerequisites
 
-- [Docker](https://www.docker.com/get-started) and Docker Compose installed
-- A Claude API key from [console.anthropic.com](https://console.anthropic.com)
+- Docker and Docker Compose
+- A Claude API key from `console.anthropic.com`
 
-### Setup
+### Local Development
 
-1. Clone the repository:
-   ```bash
-   git clone <your-repo-url>
-   cd stocksim-pro
-   ```
+1. Copy the environment template:
 
-2. Copy and fill in environment variables:
    ```bash
    cp .env.example .env
-   # Edit .env with your API keys and secrets
    ```
 
-3. Start all services:
+2. Fill in required values in `.env`, especially:
+
+   ```env
+   SECRET_KEY=your-jwt-secret
+   CLAUDE_API_KEY=your-anthropic-api-key
+   POSTGRES_USER=stocksim
+   POSTGRES_PASSWORD=stocksim_password
+   POSTGRES_DB=stocksim_db
+   REDIS_URL=redis://redis:6379
+   FRONTEND_URL=http://localhost:3000
+   ```
+
+3. Start the development stack:
+
    ```bash
    docker compose up --build
    ```
 
-4. Open your browser:
-   - Frontend: http://localhost:3000
-   - Backend API docs: http://localhost:8000/docs
+4. Open:
+
+   - Frontend: `http://localhost:3000`
+   - Backend API docs: `http://localhost:8000/docs`
+   - Health check: `http://localhost:8000/api/health`
+
+## Production Run
+
+Use the production override file with the base compose file:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+```
+
+Production mode uses:
+
+- Multi-stage frontend build served by Nginx
+- Gunicorn with Uvicorn workers for FastAPI
+- Redis password and append-only persistence
+- Nginx production config with gzip, security headers, API rate limiting, and SSE support
+- Scheduled PostgreSQL backups through the `db-backup` service
+
+## Testing
+
+Backend:
+
+```bash
+cd backend
+pytest
+```
+
+Frontend:
+
+```bash
+cd frontend
+npm test
+```
+
+Current local verification:
+
+- Backend: `52 passed`
+- Frontend: blocked in the current sandbox by `spawn EPERM` while loading the Vite config; this looks like a local permission issue, not a failing test assertion.
 
 ## Project Structure
 
-```
+```text
 Stock Market/
-├── docker-compose.yml        # All services: frontend, backend, db, redis, nginx
-├── .env.example              # Environment variable template
-├── frontend/                 # React + TypeScript app
-│   ├── Dockerfile
-│   ├── package.json
-│   └── src/
-│       ├── components/       # Reusable UI components
-│       ├── pages/            # Route pages
-│       ├── hooks/            # Custom React hooks
-│       └── services/         # API call functions
-├── backend/                  # Python FastAPI app
-│   ├── Dockerfile
-│   ├── requirements.txt
-│   └── app/
-│       ├── main.py
-│       ├── api/              # Route handlers
-│       ├── models/           # DB models
-│       ├── services/         # Business logic (market data, AI, trading engine)
-│       └── core/             # Config, auth, DB connection
-└── nginx/
-    └── nginx.conf            # Reverse proxy config
+|-- .github/workflows/       # GitHub Actions test and deploy workflows
+|-- backend/                 # FastAPI app, models, schemas, services, tests
+|-- frontend/                # React + TypeScript app, components, pages, hooks, tests
+|-- nginx/                   # Development and production Nginx config
+|-- scripts/                 # Operational scripts such as database backup
+|-- docker-compose.yml       # Development Docker stack
+|-- docker-compose.prod.yml  # Production compose overrides
+|-- plan.md                  # Detailed project plan and phase notes
+`-- README.md
 ```
 
-## Development Phases
+## Remaining Work
 
-| Phase | Feature | Status |
-|-------|---------|--------|
-| 1 | Foundation: Docker, Auth, User Accounts | In Progress |
-| 2 | Live Market Data (NSE/BSE + Global) | Pending |
-| 3 | Paper Trading Engine | Pending |
-| 4 | Charts & Technical Indicators | Pending |
-| 5 | Learning Modules | Pending |
-| 6 | AI Trading Assistant | Pending |
-| 7 | UI Polish, Leaderboard, Mobile | Pending |
-
-## Environment Variables
-
-See `.env.example` for all required variables. Key ones:
-
-```
-CLAUDE_API_KEY=        # Anthropic Claude API key
-SECRET_KEY=            # JWT signing secret
-POSTGRES_PASSWORD=     # Database password
-```
-
-## Contributing
-
-This project is built by the dev-squad agent team. See `plan.md` for the full architecture and development plan.
+- Provision and harden the production VPS
+- Configure domain DNS and HTTPS certificates
+- Add production SSL listener and HTTP-to-HTTPS redirect
+- Configure uptime monitoring
+- Run full E2E and Lighthouse checks against production
+- Test backup restore procedure before go-live
 
 ## License
 
