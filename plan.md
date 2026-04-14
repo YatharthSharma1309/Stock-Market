@@ -398,21 +398,16 @@ Dropped `nsepy` as primary source — `yfinance` covers NSE/BSE/global uniformly
 - [ ] Set up certbot auto-renew: `systemctl enable certbot.timer`
 
 #### CI/CD — GitHub Actions
-- [ ] `.github/workflows/test.yml` — runs on every push/PR:
-  ```
-  jobs:
-    test-backend:  python -m pytest backend/tests/ -v
-    test-frontend: cd frontend && npm ci && npm test
-  ```
-- [ ] `.github/workflows/deploy.yml` — runs on push to `main`:
-  ```
-  jobs:
-    deploy:
-      SSH into droplet
-      git pull
-      docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
-  ```
-  Uses GitHub Secrets: `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_KEY`
+- [x] `.github/workflows/test.yml` — runs on every push/PR to master/main:
+  - `test-backend`: pytest 52 tests (SQLite in-memory, mocked Redis + Anthropic)
+  - `test-frontend`: Vitest 22 tests
+  - `typecheck`: `tsc --noEmit` on the frontend
+- [x] `.github/workflows/deploy.yml` — runs on push to master (after tests pass):
+  - SSH into droplet via `appleboy/ssh-action`
+  - `git reset --hard origin/master` → writes `.env` from GitHub Secrets → `docker compose up -d --build`
+  - Health check: `curl /api/health` after 10s; fails deploy if unhealthy
+  - `concurrency` guard: only one deploy runs at a time, never cancelled mid-flight
+  - Uses GitHub Secrets: `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_KEY`, plus all app secrets
 
 #### Monitoring & Observability
 - [ ] Uptime monitoring: UptimeRobot (free) — ping `/api/health` every 5 minutes, alert on downtime
@@ -495,7 +490,7 @@ VITE_WS_URL=ws://localhost:8000
 - [x] Phase 7 — UI Polish & Final Features ✅
 - [ ] Phase 8 — Testing & QA 🔄 (unit tests done, integration + E2E pending)
 - [x] Phase 9 — Production Hardening ✅
-- [ ] Phase 10 — Cloud Deployment & CI/CD
+- [ ] Phase 10 — Cloud Deployment & CI/CD 🔄 (CI/CD done, VPS deploy + SSL pending)
 
 ## Git History
 
