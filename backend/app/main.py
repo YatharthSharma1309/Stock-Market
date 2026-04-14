@@ -1,10 +1,22 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+import sentry_sdk
+from sentry_sdk.integrations.fastapi import FastApiIntegration
+from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 from app.core.config import settings
 from app.core.database import engine, Base
 from app.api import auth, health, market, websocket, portfolio, learning, ai
 from app.api import leaderboard
+
+if settings.SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=settings.SENTRY_DSN,
+        integrations=[FastApiIntegration(), SqlalchemyIntegration()],
+        traces_sample_rate=0.2,
+        profiles_sample_rate=0.1,
+        environment="production",
+    )
 
 
 @asynccontextmanager
