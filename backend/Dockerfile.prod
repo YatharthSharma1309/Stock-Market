@@ -1,0 +1,20 @@
+FROM python:3.11-slim
+WORKDIR /app
+
+# Install dependencies first (cached layer)
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt gunicorn
+
+# Copy source (no volume mount in prod — baked into image)
+COPY . .
+
+EXPOSE 8000
+
+# 4 workers with uvicorn; adjust WEB_CONCURRENCY env var to override
+CMD ["sh", "-c", "gunicorn app.main:app \
+    -k uvicorn.workers.UvicornWorker \
+    --workers ${WEB_CONCURRENCY:-4} \
+    --bind 0.0.0.0:8000 \
+    --access-logfile - \
+    --error-logfile - \
+    --log-level info"]
