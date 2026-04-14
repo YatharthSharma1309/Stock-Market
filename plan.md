@@ -341,9 +341,9 @@ Dropped `nsepy` as primary source — `yfinance` covers NSE/BSE/global uniformly
 
 #### Backend
 - [x] gunicorn with `UvicornWorker` — 4 workers by default, tunable via `WEB_CONCURRENCY`
-- [ ] Alembic migrations (replace `create_all`) — deferred to Phase 10 pre-deploy step
-- [ ] SQLAlchemy pool tuning — deferred (defaults are fine for initial deploy)
-- [ ] Structured JSON logging — deferred
+- [x] Alembic migrations — `backend/alembic/` with initial schema migration; `Dockerfile.prod` runs `alembic upgrade head` on startup
+- [x] SQLAlchemy pool tuning — `pool_size=5`, `max_overflow=10`, `pool_timeout=30`, `pool_pre_ping=True` (PostgreSQL only)
+- [x] Structured JSON logging — `app/core/logging_config.py`; enabled via `JSON_LOGS=true` env var
 
 #### Redis
 - [x] Password via `${REDIS_PASSWORD}` + `--requirepass` in prod compose

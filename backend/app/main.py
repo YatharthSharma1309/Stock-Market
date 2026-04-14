@@ -6,8 +6,11 @@ from sentry_sdk.integrations.fastapi import FastApiIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 from app.core.config import settings
 from app.core.database import engine, Base
+from app.core.logging_config import configure_logging
 from app.api import auth, health, market, websocket, portfolio, learning, ai
 from app.api import leaderboard
+
+configure_logging(json_logs=settings.JSON_LOGS, log_level=settings.LOG_LEVEL)
 
 if settings.SENTRY_DSN:
     sentry_sdk.init(

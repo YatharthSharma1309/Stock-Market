@@ -50,6 +50,7 @@ jobs:
             SENTRY_DSN=${{ secrets.SENTRY_DSN }}
             WEB_CONCURRENCY=${{ secrets.WEB_CONCURRENCY || '4' }}
             BACKUP_RETAIN_DAYS=${{ secrets.BACKUP_RETAIN_DAYS || '7' }}
+            JSON_LOGS=true
             ENV
 
             echo "[deploy] building and restarting containers"

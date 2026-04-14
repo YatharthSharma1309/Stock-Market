@@ -10,8 +10,9 @@ COPY . .
 
 EXPOSE 8000
 
-# 4 workers with uvicorn; adjust WEB_CONCURRENCY env var to override
-CMD ["sh", "-c", "gunicorn app.main:app \
+# Run DB migrations then start gunicorn with uvicorn workers.
+# alembic upgrade head is idempotent — safe to run on every container start.
+CMD ["sh", "-c", "alembic upgrade head && gunicorn app.main:app \
     -k uvicorn.workers.UvicornWorker \
     --workers ${WEB_CONCURRENCY:-4} \
     --bind 0.0.0.0:8000 \

@@ -12,7 +12,10 @@ Complete in the repository:
 - HTTPS Docker Compose override for port 443 and certificate mounts
 - GitHub Actions test workflow
 - GitHub Actions deploy workflow
-- Sentry environment support
+- Sentry environment support (backend + frontend)
+- Alembic migrations — `alembic upgrade head` runs automatically on production container start
+- Structured JSON logging — enabled with `JSON_LOGS=true` in `.env`
+- SQLAlchemy connection pool tuning (pool_size=5, max_overflow=10, pool_pre_ping)
 - Daily PostgreSQL backup service
 - Database restore helper script
 - Backup retention setting
@@ -79,12 +82,17 @@ Set these in the GitHub repository production environment:
 - `WEB_CONCURRENCY`
 - `BACKUP_RETAIN_DAYS`
 
+Optional (set to `true` / `INFO` by default):
+- `JSON_LOGS` — emit JSON-structured log lines for log aggregation
+- `LOG_LEVEL` — application log level (`DEBUG` | `INFO` | `WARNING` | `ERROR`)
+
 ## Deploy
 
 Manual server deploy:
 
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+# Alembic runs automatically inside the backend container before gunicorn starts.
 curl -sf http://localhost/api/health
 ```
 

@@ -10,6 +10,8 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     FRONTEND_URL: str = "http://localhost:3000"
     SENTRY_DSN: str = ""
+    LOG_LEVEL: str = "INFO"
+    JSON_LOGS: bool = False
 
     class Config:
         env_file = ".env"
