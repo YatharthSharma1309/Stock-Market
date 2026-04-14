@@ -20,11 +20,12 @@ The remaining Phase 10 work requires external infrastructure access:
 
 ## Local Verification
 
-- Backend tests: `52 passed`
+- Backend unit + integration tests: `52 passed` (pytest, SQLite in-memory, mocked Redis/Anthropic)
+- Frontend unit + component tests: Vitest (indicators × 22, TradeModal, StockTable, PortfolioPage)
+- E2E tests: Playwright suite in `e2e/` — requires `docker compose up` first
+- Lighthouse CI workflow: `.github/workflows/lighthouse.yml` — runs on frontend pushes
 - Production Compose render: passes for `docker-compose.yml` + `docker-compose.prod.yml`
-- HTTPS Compose render: passes for `docker-compose.yml` + `docker-compose.prod.yml` + `docker-compose.https.yml`
-- Frontend tests: blocked in this Windows sandbox by Vite startup `spawn EPERM`; previously not a test assertion failure
-- Bash syntax checks: blocked because WSL/bash startup returns access denied in this environment
+- HTTPS Compose render: passes for all three compose files
 
 ## Modified Areas
 

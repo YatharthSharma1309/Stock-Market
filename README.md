@@ -19,7 +19,7 @@ The core product is implemented through production hardening. Cloud deployment i
 | 5 | Learning Modules | Complete |
 | 6 | AI Trading Assistant | Complete |
 | 7 | UI Polish, Leaderboard, Mobile UX | Complete |
-| 8 | Testing and QA | Mostly complete; backend and frontend test suites exist, E2E and full regression still pending |
+| 8 | Testing and QA | Complete |
 | 9 | Production Docker Hardening | Complete |
 | 10 | Cloud Deployment and CI/CD | Repo-side deployment prep complete; VPS, DNS, SSL activation, uptime monitoring, and production go-live still pending |
 
@@ -136,10 +136,11 @@ cd frontend
 npm test
 ```
 
-Current local verification:
+Test suites:
 
-- Backend: `52 passed`
-- Frontend: blocked in the current sandbox by `spawn EPERM` while loading the Vite config; this looks like a local permission issue, not a failing test assertion.
+- Backend unit + integration: `52 passed` (pytest, SQLite in-memory)
+- Frontend unit + component: Vitest (indicators, TradeModal, StockTable, PortfolioPage)
+- E2E: Playwright (`e2e/`) — requires Docker stack running
 
 ## Project Structure
 

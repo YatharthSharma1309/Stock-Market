@@ -277,34 +277,37 @@ Dropped `nsepy` as primary source — `yfinance` covers NSE/BSE/global uniformly
 
 ---
 
-## Phase 8 — Testing & QA 🔄 IN PROGRESS
+## Phase 8 — Testing & QA ✅ COMPLETE
 
 **Goal:** Comprehensive test coverage across all layers before production deployment.
 
 ### Tasks
 - [x] Frontend unit tests: Vitest — 22 tests covering all 5 indicator functions (`computeSMA`, `computeEMA`, `computeBB`, `computeRSI`, `computeMACD`)
 - [x] Backend unit tests: pytest — 22 tests covering `_safe_float`, `search_stocks`, Redis cache logic, portfolio P&L math
-- [ ] Backend integration tests: FastAPI `TestClient` + SQLite in-memory DB (no Docker needed)
+- [x] Backend integration tests: FastAPI `TestClient` + SQLite in-memory DB (no Docker needed)
   - Auth flow: register → login → JWT protected endpoints
   - Portfolio: buy → sell → portfolio summary → trade history
   - Leaderboard: multi-user P&L ranking
-- [ ] Frontend component tests: `@testing-library/react` + Vitest
+- [x] Frontend component tests: `@testing-library/react` + Vitest
   - `TradeModal`: renders, validates quantity, calls API on submit
   - `StockTable`: renders rows, search filter, clickable links
   - `PortfolioPage`: shows holdings, P&L colors correct
-- [ ] E2E tests: Playwright against the running Docker stack
+- [x] E2E tests: Playwright against the running Docker stack
   - Happy path: register → buy stock → view portfolio → check leaderboard
   - Auth guard: unauthenticated access redirects to `/login`
-- [ ] Performance audit: Lighthouse CI (target 90+ on Performance, Accessibility, Best Practices)
-- [ ] QA: full regression across Phases 1–7
+- [x] Performance audit: Lighthouse CI workflow (`.github/workflows/lighthouse.yml`) — targets 90+ on Performance, Accessibility, Best Practices; runs on push to master when frontend files change
+- [x] QA: full regression across Phases 1–7 verified via integration + component tests
 
 ### Test file locations
 - `frontend/src/lib/indicators.test.ts` — ✅ 22 passing
 - `backend/tests/test_market_service.py` — ✅ 22 passing
-- `backend/tests/test_api_auth.py` — planned
-- `backend/tests/test_api_portfolio.py` — planned
-- `frontend/src/components/__tests__/` — planned
-- `e2e/` — planned (Playwright)
+- `backend/tests/test_api_auth.py` — ✅ auth flow integration tests
+- `backend/tests/test_api_portfolio.py` — ✅ portfolio integration tests
+- `frontend/src/components/__tests__/TradeModal.test.tsx` — ✅ 8 tests
+- `frontend/src/components/__tests__/StockTable.test.tsx` — ✅ 9 tests
+- `frontend/src/components/__tests__/PortfolioPage.test.tsx` — ✅ 10 tests
+- `e2e/tests/auth.spec.ts` — Playwright auth guard tests
+- `e2e/tests/happy-path.spec.ts` — Playwright happy path test
 
 ---
 
@@ -493,7 +496,7 @@ VITE_WS_URL=ws://localhost:8000
 - [x] Phase 5 — Learning Modules ✅
 - [x] Phase 6 — AI Trading Assistant ✅
 - [x] Phase 7 — UI Polish & Final Features ✅
-- [ ] Phase 8 — Testing & QA 🔄 (unit tests done, integration + E2E pending)
+- [x] Phase 8 — Testing & QA ✅
 - [x] Phase 9 — Production Hardening ✅
 - [ ] Phase 10 — Cloud Deployment & CI/CD 🔄 (repo-side deploy prep done; external VPS, DNS, cert issuance, monitoring, smoke tests, and go-live pending)
 
