@@ -8,26 +8,31 @@ import TradesPage from '@/pages/TradesPage'
 import StockDetailPage from '@/pages/StockDetailPage'
 import LearningPage from '@/pages/LearningPage'
 import LessonViewerPage from '@/pages/LessonViewerPage'
+import LeaderboardPage from '@/pages/LeaderboardPage'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import Layout from '@/components/Layout'
+import ErrorBoundary from '@/components/ErrorBoundary'
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
-      <Route element={<ProtectedRoute />}>
-        <Route element={<Layout />}>
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/markets" element={<MarketsPage />} />
-          <Route path="/portfolio" element={<PortfolioPage />} />
-          <Route path="/trades" element={<TradesPage />} />
-          <Route path="/stocks/:symbol" element={<StockDetailPage />} />
-          <Route path="/learn" element={<LearningPage />} />
-          <Route path="/learn/:moduleId" element={<LessonViewerPage />} />
+    <ErrorBoundary>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route element={<ProtectedRoute />}>
+          <Route element={<Layout />}>
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/markets" element={<MarketsPage />} />
+            <Route path="/portfolio" element={<PortfolioPage />} />
+            <Route path="/trades" element={<TradesPage />} />
+            <Route path="/stocks/:symbol" element={<StockDetailPage />} />
+            <Route path="/learn" element={<LearningPage />} />
+            <Route path="/learn/:moduleId" element={<LessonViewerPage />} />
+            <Route path="/leaderboard" element={<LeaderboardPage />} />
+          </Route>
         </Route>
-      </Route>
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
-    </Routes>
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      </Routes>
+    </ErrorBoundary>
   )
 }

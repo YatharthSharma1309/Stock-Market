@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
-import { TrendingUp, TrendingDown, BarChart2, ArrowRight, Briefcase, GraduationCap, Flame } from 'lucide-react'
+import { TrendingUp, TrendingDown, BarChart2, ArrowRight, Briefcase, GraduationCap } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import api from '@/services/api'
 import { useLearningProgress } from '@/hooks/useLearningProgress'
 import { TOTAL_LESSONS } from '@/data/learningContent'
+import { Skeleton } from '@/components/Skeleton'
 
 interface PortfolioSummary {
   virtual_balance: number
@@ -20,10 +21,14 @@ function fmt(n: number, decimals = 2) {
 export default function DashboardPage() {
   const { payload } = useAuth()
   const [portfolio, setPortfolio] = useState<PortfolioSummary | null>(null)
+  const [portfolioLoading, setPortfolioLoading] = useState(true)
   const { totalCompleted, streakDays, isLoading: learnLoading } = useLearningProgress()
 
   useEffect(() => {
-    api.get('/api/portfolio').then(r => setPortfolio(r.data)).catch(() => {})
+    api.get('/api/portfolio')
+      .then(r => setPortfolio(r.data))
+      .catch(() => {})
+      .finally(() => setPortfolioLoading(false))
   }, [])
 
   const pnlPositive = (portfolio?.unrealized_pnl ?? 0) >= 0
@@ -72,16 +77,24 @@ export default function DashboardPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {statCards.map((card) => (
-          <div key={card.label} className="bg-card border border-border rounded-xl p-5">
-            <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide mb-2">{card.label}</p>
-            <p className="text-2xl font-bold text-foreground">{card.value}</p>
-            <div className={`flex items-center gap-1 mt-1 text-xs font-medium ${card.positive ? 'text-primary' : 'text-red-400'}`}>
-              {card.positive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-              {card.change}
-            </div>
-          </div>
-        ))}
+        {portfolioLoading
+          ? Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="bg-card border border-border rounded-xl p-5 space-y-3">
+                <Skeleton className="h-3 w-32" />
+                <Skeleton className="h-7 w-36" />
+                <Skeleton className="h-3 w-20" />
+              </div>
+            ))
+          : statCards.map((card) => (
+              <div key={card.label} className="bg-card border border-border rounded-xl p-5">
+                <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide mb-2">{card.label}</p>
+                <p className="text-2xl font-bold text-foreground">{card.value}</p>
+                <div className={`flex items-center gap-1 mt-1 text-xs font-medium ${card.positive ? 'text-primary' : 'text-red-400'}`}>
+                  {card.positive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                  {card.change}
+                </div>
+              </div>
+            ))}
       </div>
 
       {/* Quick links */}

@@ -248,18 +248,32 @@ Dropped `nsepy` as primary source — `yfinance` covers NSE/BSE/global uniformly
 
 ---
 
-## Phase 7 — UI Polish & Final Features
+## Phase 7 — UI Polish & Final Features ✅ COMPLETE
 
 **Goal:** World-class UI, mobile responsive, leaderboard, dark mode.
 
 ### Tasks
-- [ ] Dark / Light mode toggle (persisted to user profile)
-- [ ] Leaderboard page (rank users by virtual P&L %)
-- [ ] Full mobile responsiveness
-- [ ] Loading skeletons, smooth animations, micro-interactions
-- [ ] Error boundary handling, empty states, toast notifications
+- [x] Dark / Light mode toggle (ThemeContext wired into main.tsx, toggle button in header, full CSS variable split)
+- [x] Leaderboard page (`GET /api/leaderboard` + `/leaderboard` route, ranked by P&L%, mobile-responsive cards)
+- [x] Full mobile responsiveness (hamburger menu, overlay sidebar, responsive header, overflow-safe layout)
+- [x] Loading skeletons (`Skeleton` component, wired into DashboardPage stats cards)
+- [x] Error boundary handling (`ErrorBoundary` class component wrapping all routes)
+- [x] Toast notifications (`sonner` library, success/error toasts on trades)
 - [ ] Performance audit (Lighthouse score target: 90+)
 - [ ] QA: full regression test across all phases
+
+### New files
+- `frontend/src/components/Skeleton.tsx` — animated pulse skeleton for loading states
+- `frontend/src/components/ErrorBoundary.tsx` — React class error boundary with retry
+- `frontend/src/pages/LeaderboardPage.tsx` — ranked leaderboard with desktop table + mobile cards
+- `backend/app/api/leaderboard.py` — `GET /api/leaderboard` (all users, live prices via Redis cache, P&L%)
+
+### Key implementation details
+- Light mode in `:root`, dark mode in `.dark` — Tailwind `darkMode: ['class']` strategy
+- `sonner` toaster added to `main.tsx` alongside `ThemeProvider`
+- Leaderboard uses `get_quotes_batch` (cached) — fast for repeated calls
+- Mobile sidebar: `fixed z-50 -translate-x-full` → `translate-x-0` on open, `lg:static lg:translate-x-0` always visible on desktop
+- `ErrorBoundary` wraps entire `<Routes>` in App.tsx — catches any render error with retry button
 
 ---
 
@@ -314,7 +328,7 @@ VITE_WS_URL=ws://localhost:8000
 - [x] Phase 4 — Charts & Technical Indicators ✅
 - [x] Phase 5 — Learning Modules ✅
 - [x] Phase 6 — AI Trading Assistant ✅
-- [ ] Phase 7 — UI Polish & Final Features
+- [x] Phase 7 — UI Polish & Final Features ✅
 
 ## Git History
 

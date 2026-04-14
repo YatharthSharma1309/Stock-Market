@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { X, TrendingUp, TrendingDown } from 'lucide-react'
+import { toast } from 'sonner'
 import axios from 'axios'
 import api from '@/services/api'
 import type { Quote } from '@/hooks/useMarketData'
@@ -27,14 +28,16 @@ export default function TradeModal({ quote, onClose, onSuccess }: Props) {
     setError('')
     try {
       await api.post(`/api/portfolio/${tab}`, { symbol: quote.symbol, quantity: qty })
+      const sym = quote.symbol.replace('.NS', '').replace('.BO', '')
+      toast.success(`${tab === 'buy' ? 'Bought' : 'Sold'} ${qty} ${sym}`)
       onSuccess()
       onClose()
     } catch (e) {
-      if (axios.isAxiosError(e)) {
-        setError(e.response?.data?.detail || 'Trade failed. Please try again.')
-      } else {
-        setError('Trade failed. Please try again.')
-      }
+      const msg = axios.isAxiosError(e)
+        ? e.response?.data?.detail || 'Trade failed. Please try again.'
+        : 'Trade failed. Please try again.'
+      setError(msg)
+      toast.error(msg)
     } finally {
       setLoading(false)
     }

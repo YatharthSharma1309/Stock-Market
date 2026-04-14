@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core.database import engine, Base
 from app.api import auth, health, market, websocket, portfolio, learning, ai
+from app.api import leaderboard
 
 
 @asynccontextmanager
@@ -34,3 +35,4 @@ app.include_router(websocket.router)
 app.include_router(portfolio.router)
 app.include_router(learning.router)
 app.include_router(ai.router)
+app.include_router(leaderboard.router)
