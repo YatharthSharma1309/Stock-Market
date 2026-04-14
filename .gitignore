@@ -20,6 +20,10 @@ frontend/.vite/
 # Docker
 *.log
 
+# Certbot ACME challenge files (keep the directory, not the challenge tokens)
+certbot/www/*
+!certbot/www/.gitkeep
+
 # IDE
 .vscode/
 .idea/

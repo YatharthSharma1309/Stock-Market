@@ -54,16 +54,21 @@ jobs:
             ENV
 
             echo "[deploy] building and restarting containers"
-            docker compose \
-              -f docker-compose.yml \
-              -f docker-compose.prod.yml \
-              up -d --build --remove-orphans
+            COMPOSE_FILES="-f docker-compose.yml -f docker-compose.prod.yml"
+            if [ -f "/etc/letsencrypt/live/${{ secrets.DOMAIN }}/fullchain.pem" ]; then
+              echo "[deploy] SSL certificates found — enabling HTTPS overlay"
+              COMPOSE_FILES="$COMPOSE_FILES -f docker-compose.https.yml"
+              HEALTH_URL="https://${{ secrets.DOMAIN }}/api/health"
+            else
+              HEALTH_URL="http://localhost/api/health"
+            fi
+            docker compose $COMPOSE_FILES up -d --build --remove-orphans
 
             echo "[deploy] removing dangling images"
             docker image prune -f
 
             echo "[deploy] checking health"
             sleep 10
-            curl -sf http://localhost/api/health
+            curl -sf "$HEALTH_URL"
 
             echo "[deploy] complete"
